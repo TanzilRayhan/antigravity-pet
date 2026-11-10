@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Build artifacts & Binaries
+build/
+dist/
+*.spec
+*.exe
+
+# User local settings & logs
+settings.json
+*.log
+*.tmp
+
+# Releases and portable zips (use GitHub Releases)
+release/
+
+# Third-party copyrighted fan sprites (downloaded on-demand via in-app gallery)
+pets/agumon*
+pets/behemoth*
+pets/claude*
+pets/gigimon*
+pets/guilmon*
+pets/makima*
+pets/0818-makima*
+pets/pet/
