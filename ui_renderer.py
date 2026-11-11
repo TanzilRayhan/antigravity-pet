@@ -62,7 +62,7 @@ def draw_ground_shadow(w=70, h=12):
 
     return img.resize((w, h), Image.Resampling.LANCZOS)
 
-def draw_pill_dock(w=112, h=30, hover_btn=None, has_active_task=True):
+def draw_pill_dock(w=112, h=30, hover_btn=None, has_active_task=True, num_tasks=1):
     """
     Renders the floating action pill dock:
     [ ✎ Write | ||| Voice | 🔔 Tasks ]
@@ -126,12 +126,19 @@ def draw_pill_dock(w=112, h=30, hover_btn=None, has_active_task=True):
         except Exception:
             d.text((c3_x - 6*S, 6*S), "🔔", font=get_font(12*S), fill=b_col)
 
-        # Active emerald dot
-        dot_x = c3_x + 5 * S
-        dot_y = 6 * S
-        dot_r = 3 * S
-        d.ellipse([dot_x - dot_r - 1*S, dot_y - dot_r - 1*S, dot_x + dot_r + 1*S, dot_y + dot_r + 1*S], fill=(34, 197, 94, 90))
-        d.ellipse([dot_x - dot_r, dot_y - dot_r, dot_x + dot_r, dot_y + dot_r], fill=(34, 197, 94, 255))
+        # Active emerald dot or count badge
+        if num_tasks > 1:
+            f_num = get_font(7 * S, bold=True)
+            bx = c3_x + 3 * S
+            by = 3 * S
+            d.rounded_rectangle([bx, by, bx + 11*S, by + 9*S], radius=4*S, fill=(34, 197, 94, 255))
+            d.text((bx + 2*S + 1, by), str(num_tasks), font=f_num, fill=(255, 255, 255, 255))
+        else:
+            dot_x = c3_x + 5 * S
+            dot_y = 6 * S
+            dot_r = 3 * S
+            d.ellipse([dot_x - dot_r - 1*S, dot_y - dot_r - 1*S, dot_x + dot_r + 1*S, dot_y + dot_r + 1*S], fill=(34, 197, 94, 90))
+            d.ellipse([dot_x - dot_r, dot_y - dot_r, dot_x + dot_r, dot_y + dot_r], fill=(34, 197, 94, 255))
 
     else:
         mid_x = (SW - 2*S) // 2
@@ -332,14 +339,17 @@ def draw_speech_bubble(text="Starting new task...", max_w=240):
 
     return final_img, card_w, card_h
 
-def draw_summary_card(title="Antigravity 2.0 • Running Tasks", summary="Active coding session in progress...", max_w=240):
+def draw_summary_card(title="Antigravity 2.0 • Active Task", summary="Active coding session in progress...", task_idx=0, total_tasks=1, max_w=260):
     """
     Renders the modern conversation / task summary popup chat bubble when Bell is clicked.
+    Supports multi-task navigation (task_idx of total_tasks).
     """
     _, colors = get_theme_colors()
 
-    f_title = get_font(12, bold=True)
+    f_title = get_font(11, bold=True)
+    f_badge = get_font(9, bold=True)
     f_body = get_font(11, bold=False)
+    f_footer = get_font(9, bold=False)
 
     lines = []
     words = summary.split()
@@ -363,7 +373,9 @@ def draw_summary_card(title="Antigravity 2.0 • Running Tasks", summary="Active
 
     card_w = max_w
     line_h = 16
-    card_h = 32 + len(lines) * line_h + 16
+    has_multi = total_tasks > 1
+    footer_h = 20 if has_multi else 0
+    card_h = 32 + len(lines) * line_h + 12 + footer_h
 
     S = 3
     SW, SH = card_w * S, card_h * S
@@ -381,11 +393,29 @@ def draw_summary_card(title="Antigravity 2.0 • Running Tasks", summary="Active
     d1 = ImageDraw.Draw(final_img)
 
     d1.text((12, 9), title, font=f_title, fill=colors["accent"])
+
+    if has_multi:
+        badge_text = f"‹ {task_idx + 1}/{total_tasks} ›"
+        try:
+            bb = f_badge.getbbox(badge_text)
+            bw = bb[2] - bb[0]
+        except Exception:
+            bw = len(badge_text) * 6
+        bx = card_w - 12 - bw - 8
+        by = 8
+        d1.rounded_rectangle([bx, by, bx + bw + 8, by + 14], radius=4, fill=(56, 189, 248, 35))
+        d1.text((bx + 4, by + 1), badge_text, font=f_badge, fill=colors["accent"])
+
     d1.line([(12, 27), (card_w - 12, 27)], fill=colors["divider"])
 
     y = 33
     for l in lines:
         d1.text((12, y), l, font=f_body, fill=colors["text_primary"])
         y += line_h
+
+    if has_multi:
+        d1.line([(12, card_h - 22), (card_w - 12, card_h - 22)], fill=colors["divider"])
+        footer_text = "Click card to switch task • Bell to close"
+        d1.text((12, card_h - 17), footer_text, font=f_footer, fill=colors["text_muted"])
 
     return final_img, card_w, card_h

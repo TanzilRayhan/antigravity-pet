@@ -23,7 +23,8 @@ from pet_loader import PetSpriteSheet, PetDefinition, get_available_pets, rgba_t
 from sound import SoundPlayer
 from antigravity_launcher import (
     launch_antigravity, is_antigravity_running,
-    toggle_antigravity_window, open_antigravity_new_chat
+    toggle_antigravity_window, open_antigravity_new_chat,
+    open_antigravity_voice_mode
 )
 from task_monitor import get_current_task_status
 from theme import get_theme_colors
@@ -92,9 +93,12 @@ class AntigravityPetWindow:
         
         # Dynamic task monitoring (Bell only shown when a real task is running!)
         self.has_active_task = False
+        self.active_tasks = []
+        self.current_task_idx = 0
         self.task_title = ""
         self.task_summary = ""
         self.last_task_check_time = 0.0
+        self.summary_rect = (0, 0, 0, 0)
         
         self.show_summary = False
         self.show_menu = False
@@ -197,8 +201,8 @@ class AntigravityPetWindow:
         self.menu_w = 160
         self.menu_h = 132
 
-        self.buffer_w = max(pet_w + 100, 260)
-        self.pet_y = 75
+        self.buffer_w = max(pet_w + 100, 280)
+        self.pet_y = 115
         self.buffer_h = self.pet_y + pet_h + self.dock_h + self.menu_h + 30
 
         self.pet_x = (self.buffer_w - pet_w) // 2
@@ -437,16 +441,15 @@ class AntigravityPetWindow:
         open_antigravity_new_chat(voice_mode=False)
 
     def _on_click_voice_conversation(self):
-        """Clicking Voice triggers voice conversation in Antigravity."""
+        """Clicking Voice triggers Antigravity's native Voice Mode."""
         self.sound.play_wave()
         self.current_state = "waving"
         self.current_frame_idx = 0
         self.state_end_time = time.time() + 1.2
-        self.speech_text = "🎙️ Voice conversation in Antigravity"
-        self.show_speech = True
-        self.speech_timeout = time.time() + 2.5
+        self.show_speech = False
+        self.speech_text = None
         self._render_current_frame()
-        open_antigravity_new_chat(voice_mode=True)
+        open_antigravity_voice_mode()
 
     def _wnd_proc(self, hwnd, msg, wparam, lparam):
         try:
@@ -501,6 +504,19 @@ class AntigravityPetWindow:
                     self._render_current_frame()
                     return 0
 
+            # 1.5. Check Summary Card click if open (to cycle tasks)
+            if self.show_summary and self.has_active_task:
+                sx0, sy0, sx1, sy1 = self.summary_rect
+                if sx0 <= mouse_x <= sx1 and sy0 <= mouse_y <= sy1:
+                    if len(self.active_tasks) > 1:
+                        self.current_task_idx = (self.current_task_idx + 1) % len(self.active_tasks)
+                        curr = self.active_tasks[self.current_task_idx]
+                        self.task_title = curr["title"]
+                        self.task_summary = curr["summary"]
+                        self.sound.play_click()
+                        self._render_current_frame()
+                    return 0
+
             # 2. Check Pill Dock buttons (when visible on hover)
             if self.is_hovered:
                 if (self.dock_x <= mouse_x <= self.dock_x + self.dock_w and
@@ -518,11 +534,18 @@ class AntigravityPetWindow:
                         # Clicked Bell icon: Toggle real-time running task summary
                         self.sound.play_click()
                         self.show_summary = not self.show_summary
+                        if self.show_summary:
+                            if self.current_task_idx >= len(self.active_tasks):
+                                self.current_task_idx = 0
+                            if self.active_tasks:
+                                self.task_title = self.active_tasks[self.current_task_idx]["title"]
+                                self.task_summary = self.active_tasks[self.current_task_idx]["summary"]
                         self._render_current_frame()
                     return 0
 
             # 3. Otherwise: Start dragging Pet
             self.show_menu = False
+            self.show_summary = False
             self.is_dragging = True
             self.has_moved = False
             self.drag_start_mouse = win32gui.GetCursorPos()
@@ -659,16 +682,36 @@ class AntigravityPetWindow:
                 self.speech_timeout = 0
                 self._render_current_frame()
 
-        # Real-time task monitoring: check every 1.0s if a real task is actively running
-        if now - self.last_task_check_time > 1.0:
+        # Real-time task monitoring: check every 0.8s if real tasks are actively running
+        if now - self.last_task_check_time > 0.8:
             self.last_task_check_time = now
-            is_active, title, summary = get_current_task_status()
-            if is_active != self.has_active_task or summary != self.task_summary:
-                self.has_active_task = is_active
-                self.task_title = title
-                self.task_summary = summary
-                if not is_active:
+            is_active, title, summary, tasks = get_current_task_status()
+            
+            state_changed = (is_active != self.has_active_task) or (len(tasks) != len(self.active_tasks))
+            self.has_active_task = is_active
+            self.active_tasks = tasks
+
+            if not is_active:
+                if self.show_summary:
                     self.show_summary = False
+                    state_changed = True
+                self.current_task_idx = 0
+                self.task_title = ""
+                self.task_summary = ""
+                self.summary_rect = (0, 0, 0, 0)
+            else:
+                if self.current_task_idx >= len(tasks):
+                    self.current_task_idx = 0
+                if tasks:
+                    curr_task = tasks[self.current_task_idx]
+                    new_title = curr_task["title"]
+                    new_summary = curr_task["summary"]
+                    if new_title != self.task_title or new_summary != self.task_summary:
+                        self.task_title = new_title
+                        self.task_summary = new_summary
+                        state_changed = True
+
+            if state_changed:
                 self._calc_dimensions()
                 self._render_current_frame()
 
@@ -776,7 +819,8 @@ class AntigravityPetWindow:
                 dock_img = draw_pill_dock(
                     self.dock_w, self.dock_h,
                     hover_btn=self.hover_dock_btn,
-                    has_active_task=self.has_active_task
+                    has_active_task=self.has_active_task,
+                    num_tasks=len(self.active_tasks)
                 )
                 canvas.paste(dock_img, (self.dock_x, self.dock_y), dock_img)
 
@@ -791,11 +835,17 @@ class AntigravityPetWindow:
             elif self.show_summary and self.has_active_task:
                 summary_img, sw, sh = draw_summary_card(
                     title=self.task_title or "Antigravity 2.0 • Active Task",
-                    summary=self.task_summary or "Running Antigravity task in progress..."
+                    summary=self.task_summary or "Running Antigravity task in progress...",
+                    task_idx=self.current_task_idx,
+                    total_tasks=len(self.active_tasks),
+                    max_w=260
                 )
                 sx = (self.buffer_w - sw) // 2
                 sy = max(2, self.pet_y - sh - 4)
+                self.summary_rect = (sx, sy, sx + sw, sy + sh)
                 canvas.paste(summary_img, (sx, sy), summary_img)
+            else:
+                self.summary_rect = (0, 0, 0, 0)
 
             # 6. Context Menu below the pet & dock
             if self.show_menu:

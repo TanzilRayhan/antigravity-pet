@@ -6,11 +6,12 @@
 
 <p align="center">
   <strong>An ultra-low-latency, zero-CPU interactive desktop companion for Google Antigravity 2.0.</strong><br>
-  Built with native Win32 hardware composition, real-time Antigravity session sync, dynamic task monitoring, and built-in access to 370+ <a href="https://codexpets.net/">Codex Pets</a>.
+  Engineered with native Win32 hardware composition, native Antigravity Voice Mode integration, real-time multi-task monitoring, and built-in access to 380+ <a href="https://codexpets.net/">Codex Pets</a>.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-blue?logo=windows" alt="Platform: Windows" />
+  <img src="https://img.shields.io/badge/Version-v2.1.0-blueviolet" alt="Version: 2.1.0" />
   <img src="https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white" alt="Python 3.9+" />
   <img src="https://img.shields.io/badge/Architecture-x64-informational" alt="x64" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" />
@@ -25,39 +26,42 @@
 ## ✨ Features & Highlights
 
 - **⚡ Zero-CPU Hardware Translation:**
-  Dragging the pet across multi-monitor setups uses native Win32 hardware window translation (`user32.SetWindowPos`), completely bypassing software canvas re-rendering. Even with 1000 Hz polling gaming mice, CPU usage remains at **0.0%** and CPU temperatures stay cool (50–60°C).
+  Built with native Win32 layered windows (`user32.SetWindowPos`) composited directly via Windows DWM. Moving the mascot across multi-monitor setups at 1000 Hz mouse polling operates with **0.0% CPU overhead** and zero thermal spikes.
 
-- **🧘 Distraction-Free Stillness on Idle:**
-  When you are writing code or working, your mascot rests calmly with a subtle ground shadow. Expressive animations, jumps, and reactions activate **only when you hover or drag**.
+- **🎙️ Native Antigravity Voice Mode (Gemini Live):**
+  Clicking the waveform icon on the hover dock connects directly via Chrome DevTools Protocol (CDP) to bring Antigravity 2.0 to front and trigger its native Voice Mode—delivering instant, conversational AI coding hands-free.
 
-- **🪄 Floating Action Dock (Revealed on Hover):**
-  - **`[ ✎ ]` New Conversation:** Brings Antigravity 2.0 to front and initiates a fresh, new conversation session directly inside the canvas.
-  - **`[ ||| ]` Voice Conversation:** Opens a new conversation, focuses the message input, and automatically triggers **Windows Voice Dictation** (`Win + H`) so you can speak hands-free.
-  - **`[ 🔔 ]` Live Task Bell (Hidden when Idle):** Automatically appears with a glowing emerald indicator only when an Antigravity task is actively executing. Click it to read a real-time prompt summary parsed live from the active session transcript!
+- **🔔 Real-Time Task Notification & Multi-Task Navigation:**
+  - **Live State Awareness:** Watches session transcripts in real time, detecting whether Antigravity is **Thinking & planning...**, **Executing tool...**, or **Processing results...**.
+  - **Multi-Task Indicator & Switcher:** When multiple tasks are active, a count badge (`2`, `3`) appears on the bell. Clicking the summary card cycles through running tasks (`‹ 1/N ›`) to view prompt summaries.
+  - **Distraction-Free Auto-Hide:** The notification bell dynamically illuminates only when an agent turn is actively working and hides completely when idle.
+
+- **🎨 Modern Companion Hub & Pet Gallery:**
+  Includes a local web dashboard (`http://127.0.0.1:54321`) styled with clean Windows 11 Fluent vector icons:
+  - **My Pets:** Manage and switch active mascots instantly with in-memory thumbnail caching.
+  - **Pet Gallery:** Browse, filter, and 1-click install 380+ free community companions directly from [CodexPets.net](https://codexpets.net/).
+  - **Custom Pet Studio:** Drag-and-drop any Codex Pet `.zip` package or animated `.gif` / image to auto-synthesize an 8×9 animation atlas.
+  - **Real-Time Sliders:** Instant scaling (40% to 150%), Zero-G hover physics, audio chimes, and process auto-sync.
+
+- **🐾 6 Bundled Starter Mascots:**
+  Preloaded with clean, copyright-safe open-source companions:
+  - **Desk Otter** (Default): Friendly, spectacled desk coding companion.
+  - **AI Pulse**: Vibrant cyan AI robot with floating hands and feet.
+  - **Diandian**: Calm, sleeping tabby-and-white feline mascot.
+  - **CodeNoNo**: Futuristic floating bot with cyan animated visor.
+  - **Codex Orb**: Sleek levitating cybernetic orb.
+  - **Chud Codex**: Original grimdark chibi sci-fi pixel companion.
 
 - **🖱️ Double-Click Pet to Restore / Minimize:**
-  Double-clicking the mascot acts as an instant toggle: brings Antigravity to the foreground if minimized or behind other windows, and minimizes it if already focused.
+  Double-clicking the mascot acts as an instant shortcut: brings Antigravity to the foreground if minimized or behind other windows, and minimizes it if already focused.
 
 - **🔒 Antigravity Process Auto-Sync:**
-  The pet companion automatically wakes up and appears when Antigravity 2.0 launches, and quietly hides itself when Antigravity closes so your screen is never cluttered.
+  The pet companion automatically wakes up when Antigravity 2.0 launches and quietly hibernates when Antigravity closes so your screen stays clean.
 
 - **⌨️ Global Show / Hide Hotkeys:**
-  Press **`Ctrl + Alt + P`** or **`Win + Alt + P`** from any application or full-screen game to toggle the pet on and off on demand.
+  Press **`Ctrl + Alt + P`** or **`Win + Alt + P`** from any application or game to toggle mascot visibility on demand.
 
-- **🐾 Built-in Open-Source Mascots:**
-  Preloaded with clean, community-crafted companions:
-  - **Desk Otter** (Default): Spectacled, friendly desk coding companion.
-  - **CodeNoNo**: Cybernetic floating bot with dynamic cyan screen animations.
-  - **Codex Orb**: High-tech glowing levitating eye.
-  - **Chud Codex**: Sci-fi pixel art companion.
-
-- **🌐 In-App Pet Gallery Downloader (370+ Pets):**
-  Includes a local web dashboard (`http://127.0.0.1:54321`) to browse, preview, and 1-click install 370+ community pets from [CodexPets.net](https://codexpets.net/).
-
-- **🛠️ DIY Pet Studio & ZIP Import:**
-  Drag and drop any downloaded Codex Pet `.zip` package, or upload an animated `.gif` / image to automatically generate and slice an 8×9 animation atlas.
-
-- **📦 Standalone Portable Executable:**
+- **📦 Standalone Portable Binary (v2.1.0):**
   Available as a single standalone `AntigravityPet.exe` with zero installation and zero Python runtime required.
 
 ---
@@ -68,10 +72,11 @@
 | :--- | :--- | :--- |
 | **Restore / Minimize App** | **Double-Click Pet** | Restores Antigravity to foreground or minimizes it |
 | **Global Toggle** | **`Ctrl + Alt + P`** or **`Win + Alt + P`** | Instantly show / hide pet across any window |
-| **Move Mascot** | **Left-Click & Drag** | Drag pet anywhere across multiple displays (0% CPU) |
-| **New Conversation** | **Hover $\rightarrow$ Click `[ ✎ ]`** | Opens brand new conversation in Antigravity |
-| **Voice Mode** | **Hover $\rightarrow$ Click `[ \|\|\| ]`** | Starts new chat & activates Voice Dictation (`Win + H`) |
-| **View Active Task** | **Hover $\rightarrow$ Click `[ 🔔 ]`** | Displays real-time task prompt bubble (when task is running) |
+| **Move Mascot** | **Left-Click & Drag** | Drag pet anywhere across multiple displays (0.0% CPU) |
+| **New Conversation** | **Hover $\rightarrow$ Click `[ ✎ ]`** | Initiates a fresh new conversation in Antigravity |
+| **Native Voice Mode** | **Hover $\rightarrow$ Click `[ \|\|\| ]`** | Brings Antigravity to front and activates Voice Mode |
+| **View Active Tasks** | **Hover $\rightarrow$ Click `[ 🔔 ]`** | Displays live task prompt bubble (illuminates during active tasks) |
+| **Cycle Multiple Tasks** | **Click Summary Card** | Smoothly switches between running tasks (`‹ 1/N ›`) |
 | **Quick Menu** | **Right-Click Mascot** | Settings, Hide Mini, Switch Pet, Exit |
 | **System Tray** | **Taskbar Notification Area** | Tray icon to toggle, configure, or quit the companion |
 
@@ -81,12 +86,12 @@
 
 ### Option A: Portable Standalone Executable (Recommended)
 
-No Python or dependencies required.
+No Python or external dependencies required.
 
-1. Download **`AntigravityPet-v2.0-Portable.zip`** or **`AntigravityPet.exe`** from [Releases](https://github.com/TanzilRayhan/antigravity-pet/releases).
+1. Download **`AntigravityPet-v2.1.0-Portable.zip`** from [Releases](https://github.com/TanzilRayhan/antigravity-pet/releases).
 2. Extract the archive to any folder (e.g. `C:\AntigravityPet` or your Desktop).
 3. Double-click **`AntigravityPet.exe`** to launch!
-4. *(Optional)* Run `Create-Desktop-Shortcut.bat` or `Enable-Run-On-Startup.bat` to add one-click launch or boot start.
+4. *(Optional)* Run `Create-Desktop-Shortcut.bat` or `Enable-Run-On-Startup.bat` to add a desktop icon or autostart with Windows.
 
 ---
 
@@ -113,20 +118,21 @@ No Python or dependencies required.
 
 ## 🎨 Managing & Adding Pets
 
-### 1. In-App Gallery Downloader (370+ Pets)
+### 1. In-App Gallery Downloader (380+ Pets)
 1. Right-click the pet and select **Settings** (or open `http://127.0.0.1:54321` in your browser).
-2. Switch to the **Codex Gallery** tab.
-3. Browse or search for any companion (e.g. Anime, Digimon, Cats, Robots, Fantasy).
+2. Switch to the **Pet Gallery** tab.
+3. Browse or search for any companion (e.g. Digimon, Cat, Robot, Gaming, Anime).
 4. Click **Download & Install**. The character is immediately ready and switchable!
+   *All community gallery mascots are curated from [CodexPets.net](https://codexpets.net/).*
 
 ### 2. Drag & Drop ZIP Import
 - Download any pet archive (`.zip`) from [CodexPets.net](https://codexpets.net/) or GitHub.
-- Drag and drop the `.zip` file into the **Create / Import a Pet** tab in Settings.
+- Drag and drop the `.zip` file into the **Custom Pet** tab in Settings.
 - The companion will automatically unpack, validate, and set itself active.
 
 ### 3. Convert GIF or Images
-- Upload any animated `.gif`, `.webp`, or `.png` in the **Create / Import a Pet** tab.
-- The built-in converter automatically slices and synthesizes an 8×9 animation grid with idle, walk, jump, and thinking states.
+- Upload any animated `.gif`, `.webp`, or `.png` in the **Custom Pet** tab.
+- The built-in converter automatically slices and synthesizes an 8×9 animation grid with idle, walk, jump, and waving states.
 
 ---
 
@@ -135,11 +141,11 @@ No Python or dependencies required.
 Helper scripts are included to integrate seamlessly with Windows:
 
 * **Desktop Shortcut:**
-  Right-click `install_shortcut.ps1` $\rightarrow$ **Run with PowerShell** to create an "Antigravity Pet" shortcut on your Desktop with the official icon.
+  Run `Create-Desktop-Shortcut.bat` or right-click `install_shortcut.ps1` $\rightarrow$ **Run with PowerShell** to create an "Antigravity Pet" shortcut on your Desktop with the official icon.
 * **Launch on Windows Startup:**
-  Right-click `install_startup.ps1` $\rightarrow$ **Run with PowerShell** to register the companion in your Windows Startup directory. It will silently wait in the background and appear whenever Antigravity 2.0 starts.
+  Run `Enable-Run-On-Startup.bat` or right-click `install_startup.ps1` $\rightarrow$ **Run with PowerShell** to register the companion in your Windows Startup directory. It will silently wait in the background and appear whenever Antigravity 2.0 starts.
 * **Remove from Startup:**
-  Run `remove_startup.ps1` to unregister from Windows Startup.
+  Run `Disable-Run-On-Startup.bat` or `remove_startup.ps1` to unregister from Windows Startup.
 
 ---
 
@@ -153,42 +159,34 @@ pip install pyinstaller pillow pywin32 psutil websockets
 
 Run the build command:
 ```powershell
-pyinstaller --noconsole --onefile `
-  --icon="icon.ico" `
-  --name="AntigravityPet" `
-  --add-data="pets;pets" `
-  --add-data="icon.ico;." `
-  --add-data="logo.png;." `
-  --hidden-import="PIL" `
-  --hidden-import="win32gui" `
-  --hidden-import="win32con" `
-  --hidden-import="psutil" `
-  --hidden-import="websockets" `
-  main.py
+pyinstaller --noconfirm AntigravityPet.spec
 ```
 
 The compiled standalone executable will be created at `dist\AntigravityPet.exe`.
 
 ---
 
-## 🛠️ Architecture & Performance
+## 🛠️ Architecture & Engineering
 
 ```mermaid
 flowchart TD
     User["Mouse / Keyboard Interaction"] --> PetWin["AntigravityPetWindow (Layered Win32 HWND)"]
-    PetWin -->|"Drag Event"| HWMove["user32.SetWindowPos (0% CPU / DWM Compositor)"]
+    PetWin -->|"Drag Event"| HWMove["user32.SetWindowPos (0.0% CPU / DWM Hardware Translation)"]
     PetWin -->|"Frame Tick (8 FPS)"| FastAlpha["ImageChops (Compiled C Premultiplied Alpha)"]
-    PetWin -->|"Double Click"| Launcher["antigravity_launcher.py (Toggle Window)"]
-    PetWin -->|"Click Pen / Voice"| CDP["Chrome DevTools Protocol (New Conversation Trigger)"]
-    PetWin -->|"1.0s Polling"| TaskMon["task_monitor.py (Transcript Status)"]
-    TaskMon -->|"Active Task"| Dock["Dynamic Dock (Pill reveals Bell with live summary)"]
+    PetWin -->|"Double Click"| Launcher["antigravity_launcher.py (Toggle Antigravity Window)"]
+    PetWin -->|"Click Pen"| CDPNew["Chrome DevTools Protocol (New Conversation Trigger)"]
+    PetWin -->|"Click Voice"| CDPVoi["Chrome DevTools Protocol (Native Voice Mode / Gemini Live)"]
+    PetWin -->|"0.8s Polling"| TaskMon["task_monitor.py (Transcript Status & Lifecycle)"]
+    TaskMon -->|"Active Tasks (>0)"| Dock["Dynamic Dock (Pill reveals Bell with Task Count)"]
+    Dock -->|"Click Bell"| TaskCard["Summary Card (‹ 1/N › Navigation with Click-to-Cycle)"]
     TaskMon -->|"Idle"| CompactDock["Compact Dock (Bell Hidden)"]
     PetWin -->|"Right Click -> Settings"| HubServer["hub_server.py (Local Web Hub at :54321)"]
 ```
 
-### Performance Benchmarks:
+### Engineering Highlights:
 - **Zero-CPU Window Translation:** Replaces per-frame canvas re-rendering during dragging with native `user32.SetWindowPos` hardware translation (~3 µs execution time).
 - **Compiled C Alpha Multiplication:** Uses Pillow's C-accelerated `ImageChops.multiply` for 32-bit BGRA premultiplication, taking **~1.5 ms** per frame instead of 25 ms pure Python bytecode loops (>15× faster).
+- **Chrome DevTools Protocol Bridge:** Interacts directly with Antigravity's embedded browser runtime port to trigger state transitions deterministically without fragile simulated clicks.
 - **Security Hardened Local Hub:** Restricted local CORS, CSRF verification, and regex sanitization (`[^a-zA-Z0-9_\-]`) to prevent path traversal.
 
 ---
@@ -202,4 +200,4 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more informa
 ## 💖 Acknowledgements & Community
 
 - Built with pair programming on **Google Antigravity 2.0**.
-- Inspired by the [Codex Desktop Pet](https://codexpets.net/) and the [awesome-codex-pet](https://github.com/legeling/awesome-codex-pet) community catalog.
+- Mascot gallery curated from and inspired by [CodexPets.net](https://codexpets.net/).
