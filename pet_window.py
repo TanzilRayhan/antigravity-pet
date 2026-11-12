@@ -486,7 +486,7 @@ class AntigravityPetWindow:
                         idx = rel_y // 30
                         if idx == 0:    # Settings
                             self.open_settings_hub()
-                        elif idx == 1 or idx == 3:  # Hide Pet / Exit to Tray
+                        elif idx == 1:  # Hide Pet
                             self.hide_pet()
                         elif idx == 2:  # Switch Pet
                             self.available_pets = get_available_pets(PETS_DIR)
@@ -498,6 +498,8 @@ class AntigravityPetWindow:
                             next_idx = (curr_idx + 1) % len(self.available_pets)
                             self.change_pet(self.available_pets[next_idx].slug)
                             self.show_menu = False
+                        elif idx == 3:  # Exit (Quit application cleanly)
+                            self.quit_app()
                         return 0
                 else:
                     self.show_menu = False

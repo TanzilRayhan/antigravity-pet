@@ -33,7 +33,7 @@ HTML_CONTENT = r"""<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity Pet</title>
+    <title>Antigravity Pet Settings</title>
     <link rel="icon" type="image/png" href="/logo.png">
     <style>
         :root {
@@ -1559,13 +1559,16 @@ def open_hub_app(port=54321):
     import win32gui
     import win32con
 
-    # 1. Check if Antigravity Pet window is already open
+    # 1. Check if Settings window is already open (avoid matching our transparent pet window)
     existing_hwnd = None
     def enum_cb(hwnd, _):
         nonlocal existing_hwnd
         if win32gui.IsWindowVisible(hwnd):
+            cls = win32gui.GetClassName(hwnd)
+            if cls == "AntigravityPetWindowLayered":
+                return True
             title = win32gui.GetWindowText(hwnd)
-            if "Antigravity Pet" in title:
+            if "Antigravity Pet Settings" in title or "Antigravity Pet Hub" in title or f"127.0.0.1:{port}" in title:
                 existing_hwnd = hwnd
                 return False
         return True
@@ -1579,6 +1582,7 @@ def open_hub_app(port=54321):
         try:
             win32gui.ShowWindow(existing_hwnd, win32con.SW_RESTORE)
             win32gui.SetForegroundWindow(existing_hwnd)
+            win32gui.BringWindowToTop(existing_hwnd)
             return
         except Exception:
             pass

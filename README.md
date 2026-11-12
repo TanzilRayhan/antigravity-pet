@@ -18,6 +18,14 @@
   <img src="https://img.shields.io/badge/Status-Open%20Source-brightgreen" alt="Status: Open Source" />
 </p>
 
+<p align="center">
+  <a href="https://youtu.be/85AJkZD1uu8" target="_blank">
+    <img src="https://img.youtube.com/vi/85AJkZD1uu8/maxresdefault.jpg" alt="Antigravity Desktop Pet Video Walkthrough" width="720" style="max-width: 100%; border-radius: 8px;" />
+  </a>
+  <br>
+  <a href="https://youtu.be/85AJkZD1uu8"><strong>▶️ Watch the Full Walkthrough & Demo on YouTube</strong></a>
+</p>
+
 > [!NOTE]
 > **Disclaimer:** Antigravity Desktop Pet is an independent, community-driven open-source companion project. It is not affiliated with, maintained by, or endorsed by Google, Google DeepMind, or OpenAI. All product names, logos, and brands are property of their respective owners.
 
