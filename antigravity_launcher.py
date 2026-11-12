@@ -81,8 +81,12 @@ def launch_antigravity(custom_path=None):
     if windows:
         hwnd, title = windows[0]
         try:
-            win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+            if win32gui.IsIconic(hwnd):
+                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+            else:
+                win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
             win32gui.SetForegroundWindow(hwnd)
+            win32gui.BringWindowToTop(hwnd)
             return True
         except Exception:
             pass
@@ -133,70 +137,23 @@ def _get_cdp_ws_url():
         url = f"http://127.0.0.1:{port}/json"
         req = urllib.request.urlopen(url, timeout=1.5)
         pages = json.loads(req.read().decode('utf-8'))
-        target = next((p for p in pages if p.get("type") == "page" and ("Antigravity" in p.get("title", "") or "/c/" in p.get("url", "") or "outside-of-project" in p.get("url", ""))), None)
-        if not target or "webSocketDebuggerUrl" not in target:
-            target = next((p for p in pages if p.get("type") == "page" and "webSocketDebuggerUrl" in p), None)
-        return target.get("webSocketDebuggerUrl") if target else None
+        # Pick the primary Antigravity web UI page (excluding data: splash and iframes)
+        for p in pages:
+            u = p.get("url", "")
+            if p.get("type") == "page" and ("127.0.0.1" in u or "localhost" in u) and not u.startswith("data:"):
+                return p.get("webSocketDebuggerUrl")
+        # Fallback to any page target
+        for p in pages:
+            if p.get("type") == "page" and "webSocketDebuggerUrl" in p:
+                return p.get("webSocketDebuggerUrl")
+        return None
     except Exception:
         return None
 
 def _trigger_cdp_new_conversation():
     """
     Connects to Antigravity's embedded Chrome DevTools Protocol to directly
-    click the 'New Conversation' button and focus the chat input.
-    """
-    ws_url = _get_cdp_ws_url()
-    if not ws_url:
-        return False
-    try:
-        async def _run():
-            async with websockets.connect(ws_url, close_timeout=1.5) as ws:
-                script = """
-                (() => {
-                    const clickReactElement = (el) => {
-                        if (!el) return false;
-                        const propsKey = Object.keys(el).find(k => k.startsWith('__reactProps$'));
-                        const fiberKey = Object.keys(el).find(k => k.startsWith('__reactFiber$'));
-                        if (propsKey && el[propsKey] && typeof el[propsKey].onClick === 'function') {
-                            el[propsKey].onClick({ preventDefault: () => {}, stopPropagation: () => {} });
-                            return true;
-                        }
-                        if (fiberKey && el[fiberKey] && el[fiberKey].memoizedProps && typeof el[fiberKey].memoizedProps.onClick === 'function') {
-                            el[fiberKey].memoizedProps.onClick({ preventDefault: () => {}, stopPropagation: () => {} });
-                            return true;
-                        }
-                        el.click();
-                        return true;
-                    };
-
-                    const btn = document.querySelector('[data-testid="new-conversation-button"]') ||
-                                Array.from(document.querySelectorAll('a, button')).find(x => (x.innerText || '').trim() === 'New Conversation');
-                    if (btn) {
-                        clickReactElement(btn);
-                        setTimeout(() => {
-                            const input = document.querySelector('[aria-label="Message input"]');
-                            if (input) input.focus();
-                        }, 120);
-                        return true;
-                    }
-                    window.location.href = '/';
-                    return true;
-                })()
-                """
-                msg = {"id": 1, "method": "Runtime.evaluate", "params": {"expression": script, "returnByValue": True}}
-                await ws.send(json.dumps(msg))
-                resp = await ws.recv()
-                data = json.loads(resp)
-                return bool(data.get("result", {}).get("result", {}).get("value"))
-        
-        return asyncio.run(_run())
-    except Exception:
-        return False
-
-def _trigger_cdp_voice_mode():
-    """
-    Connects to Antigravity's embedded Chrome DevTools Protocol to directly
-    trigger Antigravity's native Voice Mode (Gemini Live).
+    open a brand new conversation and focus the chat input.
     """
     ws_url = _get_cdp_ws_url()
     if not ws_url:
@@ -206,59 +163,216 @@ def _trigger_cdp_voice_mode():
             async with websockets.connect(ws_url, close_timeout=2.0) as ws:
                 script = """
                 (() => {
-                    const clickReactElement = (el) => {
+                    const clickEl = (el) => {
                         if (!el) return false;
+                        const opts = { bubbles: true, cancelable: true, view: window };
+                        el.dispatchEvent(new PointerEvent('pointerdown', opts));
+                        el.dispatchEvent(new MouseEvent('mousedown', opts));
+                        el.dispatchEvent(new PointerEvent('pointerup', opts));
+                        el.dispatchEvent(new MouseEvent('mouseup', opts));
+                        el.dispatchEvent(new MouseEvent('click', opts));
+                        
                         const propsKey = Object.keys(el).find(k => k.startsWith('__reactProps$'));
                         const fiberKey = Object.keys(el).find(k => k.startsWith('__reactFiber$'));
                         if (propsKey && el[propsKey] && typeof el[propsKey].onClick === 'function') {
                             el[propsKey].onClick({ preventDefault: () => {}, stopPropagation: () => {} });
-                            return true;
-                        }
-                        if (fiberKey && el[fiberKey] && el[fiberKey].memoizedProps && typeof el[fiberKey].memoizedProps.onClick === 'function') {
+                        } else if (fiberKey && el[fiberKey] && el[fiberKey].memoizedProps && typeof el[fiberKey].memoizedProps.onClick === 'function') {
                             el[fiberKey].memoizedProps.onClick({ preventDefault: () => {}, stopPropagation: () => {} });
-                            return true;
                         }
-                        el.click();
+                        if (typeof el.click === 'function') el.click();
                         return true;
                     };
 
-                    const findVoiceBtn = () => {
-                        return document.querySelector('[data-testid="voice-start-button"]') ||
-                               document.querySelector('[aria-label="Start Voice mode"]') ||
-                               document.querySelector('[data-testid="voice-stop-button"]') ||
-                               document.querySelector('[aria-label*="Stop Voice"]') ||
-                               Array.from(document.querySelectorAll('button')).find(b => {
-                                   const aria = (b.getAttribute('aria-label') || '').toLowerCase();
-                                   const tip = (b.getAttribute('data-tooltip-id') || '').toLowerCase();
-                                   return (aria.includes('voice mode') || tip.includes('voice-start')) && !aria.includes('choose');
-                               });
-                    };
+                    const btn = document.querySelector('[data-testid="app-icon-new-conversation-button"]') ||
+                                document.querySelector('button[aria-label="New Conversation"]') ||
+                                document.querySelector('[data-testid="new-conversation-button"]') ||
+                                Array.from(document.querySelectorAll('button, a')).find(x => (x.innerText || '').trim() === 'New Conversation');
 
-                    let btn = findVoiceBtn();
                     if (btn) {
-                        return clickReactElement(btn);
+                        clickEl(btn);
+                        const r = btn.getBoundingClientRect();
+                        return { success: true, coords: (r.width > 0 && r.height > 0) ? { x: r.left + r.width/2, y: r.top + r.height/2 } : null };
                     }
 
-                    // If voice button isn't visible on current page, open new chat first then trigger voice
-                    const newChatBtn = document.querySelector('[data-testid="new-conversation-button"]') ||
-                                       Array.from(document.querySelectorAll('a, button')).find(x => (x.innerText || '').trim() === 'New Conversation');
-                    if (newChatBtn) {
-                        clickReactElement(newChatBtn);
-                        setTimeout(() => {
-                            const vBtn = findVoiceBtn();
-                            if (vBtn) clickReactElement(vBtn);
-                        }, 250);
-                        return true;
-                    }
-
-                    return false;
+                    // Direct navigation fallback to fresh conversation URL
+                    const proj = new URLSearchParams(window.location.search).get('project');
+                    window.location.href = proj ? `/?project=${proj}` : '/';
+                    return { success: true, navigated: true };
                 })()
                 """
                 msg = {"id": 1, "method": "Runtime.evaluate", "params": {"expression": script, "returnByValue": True}}
                 await ws.send(json.dumps(msg))
                 resp = await ws.recv()
                 data = json.loads(resp)
-                return bool(data.get("result", {}).get("result", {}).get("value"))
+                val = data.get("result", {}).get("result", {}).get("value") or {}
+                
+                if val.get('coords'):
+                    c = val['coords']
+                    await ws.send(json.dumps({'id': 2, 'method': 'Input.dispatchMouseEvent', 'params': {'type': 'mousePressed', 'x': c['x'], 'y': c['y'], 'button': 'left', 'clickCount': 1}}))
+                    await ws.recv()
+                    await ws.send(json.dumps({'id': 3, 'method': 'Input.dispatchMouseEvent', 'params': {'type': 'mouseReleased', 'x': c['x'], 'y': c['y'], 'button': 'left', 'clickCount': 1}}))
+                    await ws.recv()
+
+                # Focus prompt input
+                await asyncio.sleep(0.12)
+                focus_script = """
+                (() => {
+                    const input = document.querySelector('[aria-label="Message input"]') ||
+                                  document.querySelector('textarea') ||
+                                  document.querySelector('[contenteditable="true"]');
+                    if (input) {
+                        input.focus();
+                        return true;
+                    }
+                    return false;
+                })()
+                """
+                await ws.send(json.dumps({"id": 4, "method": "Runtime.evaluate", "params": {"expression": focus_script, "returnByValue": True}}))
+                await ws.recv()
+
+                return bool(val.get("success"))
+        
+        return asyncio.run(_run())
+    except Exception:
+        return False
+
+def _trigger_cdp_voice_mode():
+    """
+    Connects to Antigravity's embedded Chrome DevTools Protocol to directly
+    open a brand NEW conversation and activate native Voice Mode (Gemini Live).
+    """
+    ws_url = _get_cdp_ws_url()
+    if not ws_url:
+        return False
+    try:
+        async def _run():
+            async with websockets.connect(ws_url, close_timeout=3.0) as ws:
+                # Step 1: Open New Conversation first
+                script_new = """
+                (() => {
+                    const clickEl = (el) => {
+                        if (!el) return false;
+                        const opts = { bubbles: true, cancelable: true, view: window };
+                        el.dispatchEvent(new PointerEvent('pointerdown', opts));
+                        el.dispatchEvent(new MouseEvent('mousedown', opts));
+                        el.dispatchEvent(new PointerEvent('pointerup', opts));
+                        el.dispatchEvent(new MouseEvent('mouseup', opts));
+                        el.dispatchEvent(new MouseEvent('click', opts));
+                        
+                        const propsKey = Object.keys(el).find(k => k.startsWith('__reactProps$'));
+                        const fiberKey = Object.keys(el).find(k => k.startsWith('__reactFiber$'));
+                        if (propsKey && el[propsKey] && typeof el[propsKey].onClick === 'function') {
+                            el[propsKey].onClick({ preventDefault: () => {}, stopPropagation: () => {} });
+                        } else if (fiberKey && el[fiberKey] && el[fiberKey].memoizedProps && typeof el[fiberKey].memoizedProps.onClick === 'function') {
+                            el[fiberKey].memoizedProps.onClick({ preventDefault: () => {}, stopPropagation: () => {} });
+                        }
+                        if (typeof el.click === 'function') el.click();
+                        return true;
+                    };
+
+                    const btn = document.querySelector('[data-testid="app-icon-new-conversation-button"]') ||
+                                document.querySelector('button[aria-label="New Conversation"]') ||
+                                document.querySelector('[data-testid="new-conversation-button"]');
+                    if (btn) {
+                        clickEl(btn);
+                        return true;
+                    }
+                    return false;
+                })()
+                """
+                await ws.send(json.dumps({'id': 1, 'method': 'Runtime.evaluate', 'params': {'expression': script_new, 'returnByValue': True}}))
+                await ws.recv()
+
+                await asyncio.sleep(0.25)
+
+                # Step 2: Trigger Voice Mode
+                script_voice = """
+                (() => {
+                    const clickEl = (el) => {
+                        if (!el) return false;
+                        const opts = { bubbles: true, cancelable: true, view: window };
+                        el.dispatchEvent(new PointerEvent('pointerdown', opts));
+                        el.dispatchEvent(new MouseEvent('mousedown', opts));
+                        el.dispatchEvent(new PointerEvent('pointerup', opts));
+                        el.dispatchEvent(new MouseEvent('mouseup', opts));
+                        el.dispatchEvent(new MouseEvent('click', opts));
+                        
+                        const propsKey = Object.keys(el).find(k => k.startsWith('__reactProps$'));
+                        const fiberKey = Object.keys(el).find(k => k.startsWith('__reactFiber$'));
+                        if (propsKey && el[propsKey] && typeof el[propsKey].onClick === 'function') {
+                            el[propsKey].onClick({ preventDefault: () => {}, stopPropagation: () => {} });
+                        } else if (fiberKey && el[fiberKey] && el[fiberKey].memoizedProps && typeof el[fiberKey].memoizedProps.onClick === 'function') {
+                            el[fiberKey].memoizedProps.onClick({ preventDefault: () => {}, stopPropagation: () => {} });
+                        }
+                        if (typeof el.click === 'function') el.click();
+                        return true;
+                    };
+
+                    // Check if Voice Picker Modal ("Use Fola") is open
+                    const pickerUse = document.querySelector('[data-testid="voice-picker-use"]');
+                    if (pickerUse) {
+                        clickEl(pickerUse);
+                        return { action: 'confirmed_picker' };
+                    }
+
+                    const vBtn = document.querySelector('[data-testid="voice-start-button"]') ||
+                                 document.querySelector('[aria-label="Start Voice mode"]');
+                    if (vBtn) {
+                        // Fiber traversal to invoke onStart() directly
+                        const fk = Object.keys(vBtn).find(x => x.startsWith('__reactFiber$'));
+                        let fiber = vBtn[fk];
+                        while (fiber) {
+                            if (fiber.memoizedProps && typeof fiber.memoizedProps.onStart === 'function') {
+                                try {
+                                    fiber.memoizedProps.onStart();
+                                    return { action: 'called_onstart' };
+                                } catch (e) {}
+                            }
+                            fiber = fiber.return;
+                        }
+
+                        // Props onClick fallback
+                        const pk = Object.keys(vBtn).find(x => x.startsWith('__reactProps$'));
+                        if (pk && vBtn[pk] && typeof vBtn[pk].onClick === 'function') {
+                            vBtn[pk].onClick({ preventDefault: () => {}, stopPropagation: () => {} });
+                        }
+                        clickEl(vBtn);
+                        const r = vBtn.getBoundingClientRect();
+                        return { action: 'clicked_button', coords: (r.width > 0 && r.height > 0) ? { x: r.left + r.width/2, y: r.top + r.height/2 } : null };
+                    }
+                    return { action: 'not_found' };
+                })()
+                """
+                await ws.send(json.dumps({'id': 2, 'method': 'Runtime.evaluate', 'params': {'expression': script_voice, 'returnByValue': True}}))
+                resp2 = await ws.recv()
+                data2 = json.loads(resp2)
+                v_res = data2.get("result", {}).get("result", {}).get("value") or {}
+                
+                if v_res.get('coords'):
+                    c = v_res['coords']
+                    await ws.send(json.dumps({'id': 3, 'method': 'Input.dispatchMouseEvent', 'params': {'type': 'mousePressed', 'x': c['x'], 'y': c['y'], 'button': 'left', 'clickCount': 1}}))
+                    await ws.recv()
+                    await ws.send(json.dumps({'id': 4, 'method': 'Input.dispatchMouseEvent', 'params': {'type': 'mouseReleased', 'x': c['x'], 'y': c['y'], 'button': 'left', 'clickCount': 1}}))
+                    await ws.recv()
+
+                # Step 3: Check if Voice Picker Modal appeared ("Use Fola") and confirm it
+                await asyncio.sleep(0.3)
+                confirm_script = """
+                (() => {
+                    const pickerUse = document.querySelector('[data-testid="voice-picker-use"]');
+                    if (pickerUse) {
+                        const opts = { bubbles: true, cancelable: true, view: window };
+                        pickerUse.dispatchEvent(new MouseEvent('click', opts));
+                        pickerUse.click();
+                        return true;
+                    }
+                    return false;
+                })()
+                """
+                await ws.send(json.dumps({'id': 5, 'method': 'Runtime.evaluate', 'params': {'expression': confirm_script, 'returnByValue': True}}))
+                await ws.recv()
+
+                return True
         
         return asyncio.run(_run())
     except Exception:
