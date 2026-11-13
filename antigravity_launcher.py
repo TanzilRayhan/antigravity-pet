@@ -32,10 +32,13 @@ def _ensure_desktop_access():
 
 def is_antigravity_running():
     """Check if Antigravity desktop app process is currently running."""
-    for proc in psutil.process_iter(['name']):
+    my_pid = os.getpid()
+    for proc in psutil.process_iter(['pid', 'name']):
         try:
+            if proc.info['pid'] == my_pid:
+                continue
             name = (proc.info['name'] or '').lower()
-            if 'antigravity' in name:
+            if 'antigravity' in name and 'antigravitypet' not in name and 'antigravity_pet' not in name:
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
@@ -46,11 +49,14 @@ def find_antigravity_windows():
     _ensure_desktop_access()
     matching_hwnds = []
     
+    my_pid = os.getpid()
     target_pids = set()
     for proc in psutil.process_iter(['pid', 'name']):
         try:
+            if proc.info['pid'] == my_pid:
+                continue
             name = (proc.info['name'] or '').lower()
-            if 'antigravity' in name:
+            if 'antigravity' in name and 'antigravitypet' not in name and 'antigravity_pet' not in name:
                 target_pids.add(proc.info['pid'])
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass

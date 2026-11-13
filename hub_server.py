@@ -342,6 +342,33 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             transform: scale(1.08);
         }
 
+        .pet-sprite {
+            width: 92px;
+            height: 100px;
+            background-repeat: no-repeat;
+            background-position-x: 0%;
+            background-position-y: 0%;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            animation: sprite-pet-play-6 1.15s steps(1) infinite;
+            contain: paint;
+            will-change: background-position;
+            transition: transform 0.2s ease;
+        }
+
+        .pet-card:hover .pet-sprite {
+            transform: scale(1.1);
+        }
+
+        @keyframes sprite-pet-play-6 {
+            0%, 16.665% { background-position-x: 0%; }
+            16.666%, 33.332% { background-position-x: 14.2857%; }
+            33.333%, 49.999% { background-position-x: 28.5714%; }
+            50%, 66.665% { background-position-x: 42.8571%; }
+            66.666%, 83.332% { background-position-x: 57.1429%; }
+            83.333%, 100% { background-position-x: 71.4286%; }
+        }
+
         .pet-info {
             width: 100%;
             margin-bottom: 12px;
@@ -419,6 +446,26 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             cursor: default;
         }
 
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+            margin-right: 2px;
+        }
+
         .btn-danger {
             background: transparent;
             color: var(--danger);
@@ -436,6 +483,79 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             background: var(--danger);
             color: #fff;
             border-color: var(--danger);
+        }
+
+        .btn-icon {
+            width: auto;
+            padding: 8px 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.68);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.15s ease;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 440px;
+            padding: 22px 24px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+            animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .modal-close:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .settings-card {
@@ -486,6 +606,83 @@ HTML_CONTENT = r"""<!DOCTYPE html>
 
         .switch-group:last-child {
             border-bottom: none;
+        }
+
+        .shortcut-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 16px;
+        }
+        .shortcut-row:last-child {
+            border-bottom: none;
+        }
+        .shortcut-info {
+            flex: 1;
+        }
+        .shortcut-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+        .shortcut-desc {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+        .shortcut-input-wrap {
+            display: flex;
+            align-items: center;
+            position: relative;
+            min-width: 170px;
+        }
+        .shortcut-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--accent);
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 30px 8px 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .shortcut-input:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.45);
+        }
+        .shortcut-input.recording {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+            background: rgba(56, 189, 248, 0.08);
+            color: #fff;
+        }
+        .shortcut-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+            font-family: inherit;
+            font-size: 11.5px;
+        }
+        .shortcut-clear-btn {
+            position: absolute;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: color 0.15s ease;
+        }
+        .shortcut-clear-btn:hover {
+            color: var(--danger);
         }
 
         .creator-container {
@@ -583,9 +780,13 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             z-index: 1000;
             font-size: 13px;
             font-weight: 600;
-            display: inline-flex;
             align-items: center;
             gap: 8px;
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.6);
+            color: #fca5a5;
         }
 
         .toast.show {
@@ -640,7 +841,14 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             <div class="grid-header">
                 <div>
                     <h2>Pet Gallery</h2>
-                    <p id="gallery-subtitle" style="color:var(--text-muted); font-size:13px; margin-top:2px;">Browse and one-click install 380+ free community mascots. Source: <a href="https://codexpets.net/" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:600;">CodexPets.net</a></p>
+                    <p id="gallery-subtitle" style="color:var(--text-muted); font-size:13px; margin-top:2px;">Showing 0 of 0 community pets</p>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:5px;">
+                        <span>Source:</span>
+                        <a href="https://codexpets.net/" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:600; display:inline-flex; align-items:center; gap:3px;">
+                            CodexPets.net
+                            <svg style="width:11px; height:11px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        </a>
+                    </div>
                 </div>
                 <div class="search-box">
                     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -744,10 +952,86 @@ HTML_CONTENT = r"""<!DOCTYPE html>
 
                 <div class="switch-group">
                     <div>
+                        <div style="font-weight:600; font-size:13px;">Start with Windows</div>
+                        <p style="font-size:12px; color:var(--text-muted);">Automatically launch pet companion and global shortcut (Ctrl+Alt+P) on boot</p>
+                    </div>
+                    <input type="checkbox" id="setting-startup" style="width:18px; height:18px; accent-color:var(--accent);" onchange="updateStartup(this.checked)">
+                </div>
+
+                <div class="switch-group">
+                    <div>
                         <div style="font-weight:600; font-size:13px;">Audio Chimes & Sound Effects</div>
                         <p style="font-size:12px; color:var(--text-muted);">Play audio chime when dragging, clicking dock icons, or waving</p>
                     </div>
                     <input type="checkbox" id="setting-sound" style="width:18px; height:18px; accent-color:var(--accent);" onchange="updateSound(this.checked)">
+                </div>
+
+                <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <h3 style="font-size:15px; font-weight:700; margin:0;">Keyboard Shortcuts</h3>
+                        <button class="btn btn-secondary" onclick="resetShortcutsToDefault()" style="font-size:12px; padding:4px 10px; height:auto;">Reset Defaults</button>
+                    </div>
+                    <p style="color:var(--text-muted); font-size:12px; margin-bottom:16px;">Click any shortcut input and press your desired key combination, or click Clear to leave it blank.</p>
+
+                    <!-- Shortcut 1: Run & Exit Pet -->
+                    <div class="shortcut-row">
+                        <div class="shortcut-info">
+                            <div class="shortcut-name">Run & Exit Pet Companion</div>
+                            <div class="shortcut-desc">Launch when closed; cleanly exit when pet is showing</div>
+                        </div>
+                        <div class="shortcut-input-wrap">
+                            <input type="text" id="shortcut-toggle_pet" class="shortcut-input" readonly placeholder="Click to record..." onclick="startRecordingShortcut('toggle_pet')" onkeydown="handleShortcutKeydown(event, 'toggle_pet')">
+                            <button class="shortcut-clear-btn" title="Clear shortcut" onclick="clearShortcut('toggle_pet')">&times;</button>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut 2: Hide & Show Mini -->
+                    <div class="shortcut-row">
+                        <div class="shortcut-info">
+                            <div class="shortcut-name">Hide & Show Mini (Tray)</div>
+                            <div class="shortcut-desc">Toggle pet visibility between screen and tray without exiting</div>
+                        </div>
+                        <div class="shortcut-input-wrap">
+                            <input type="text" id="shortcut-toggle_visibility" class="shortcut-input" readonly placeholder="Click to record..." onclick="startRecordingShortcut('toggle_visibility')" onkeydown="handleShortcutKeydown(event, 'toggle_visibility')">
+                            <button class="shortcut-clear-btn" title="Clear shortcut" onclick="clearShortcut('toggle_visibility')">&times;</button>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut 3: Switch Pet -->
+                    <div class="shortcut-row">
+                        <div class="shortcut-info">
+                            <div class="shortcut-name">Switch Pet</div>
+                            <div class="shortcut-desc">Cycle to the next installed companion mascot</div>
+                        </div>
+                        <div class="shortcut-input-wrap">
+                            <input type="text" id="shortcut-switch_pet" class="shortcut-input" readonly placeholder="Click to record..." onclick="startRecordingShortcut('switch_pet')" onkeydown="handleShortcutKeydown(event, 'switch_pet')">
+                            <button class="shortcut-clear-btn" title="Clear shortcut" onclick="clearShortcut('switch_pet')">&times;</button>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut 4: Switch Pet Behavior Mode -->
+                    <div class="shortcut-row">
+                        <div class="shortcut-info">
+                            <div class="shortcut-name">Switch Behavior Mode</div>
+                            <div class="shortcut-desc">Toggle between Zero-G Float (hover) and Stationary</div>
+                        </div>
+                        <div class="shortcut-input-wrap">
+                            <input type="text" id="shortcut-toggle_behavior" class="shortcut-input" readonly placeholder="Click to record..." onclick="startRecordingShortcut('toggle_behavior')" onkeydown="handleShortcutKeydown(event, 'toggle_behavior')">
+                            <button class="shortcut-clear-btn" title="Clear shortcut" onclick="clearShortcut('toggle_behavior')">&times;</button>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut 5: Open Settings Hub -->
+                    <div class="shortcut-row">
+                        <div class="shortcut-info">
+                            <div class="shortcut-name">Open Settings Hub</div>
+                            <div class="shortcut-desc">Open the Pet Settings and Gallery Hub in your browser</div>
+                        </div>
+                        <div class="shortcut-input-wrap">
+                            <input type="text" id="shortcut-open_settings" class="shortcut-input" readonly placeholder="Click to record..." onclick="startRecordingShortcut('open_settings')" onkeydown="handleShortcutKeydown(event, 'open_settings')">
+                            <button class="shortcut-clear-btn" title="Clear shortcut" onclick="clearShortcut('open_settings')">&times;</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
@@ -758,8 +1042,62 @@ HTML_CONTENT = r"""<!DOCTYPE html>
         </div>
     </main>
 
+    <!-- Edit Pet Modal -->
+    <div id="edit-modal" class="modal-overlay" style="display:none;" onclick="if(event.target === this) closeEditPetModal()">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Edit Pet Details</h3>
+                <button class="modal-close" onclick="closeEditPetModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-pet-slug">
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label style="display:block; font-size:12px; font-weight:600; margin-bottom:6px; color:var(--text-main);">Pet Name</label>
+                    <input type="text" id="edit-pet-name" class="form-input" style="width:100%; box-sizing:border-box;" placeholder="Enter pet name...">
+                </div>
+                <div class="form-group">
+                    <label style="display:block; font-size:12px; font-weight:600; margin-bottom:6px; color:var(--text-main);">Subheading / Description</label>
+                    <textarea id="edit-pet-desc" class="form-input" style="width:100%; height:80px; box-sizing:border-box; resize:vertical; font-family:inherit;" placeholder="Enter pet subheading or description..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button class="btn btn-outline" style="width:auto; padding:8px 16px;" onclick="closeEditPetModal()">Cancel</button>
+                <button class="btn" style="width:auto; padding:8px 20px;" onclick="saveEditPet()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Pet Confirmation Modal -->
+    <div id="delete-modal" class="modal-overlay" style="display:none;" onclick="if(event.target === this) closeDeletePetModal()">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="color:#ef4444; display:flex; align-items:center; gap:8px;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Delete Pet Permanently
+                </h3>
+                <button class="modal-close" onclick="closeDeletePetModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="delete-pet-slug">
+                <p style="font-size:14px; color:var(--text-main); margin-bottom:12px;">
+                    Are you sure you want to permanently delete <strong id="delete-pet-name-display" style="color:var(--text-main);"></strong>?
+                </p>
+                <div style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.25); border-radius:8px; padding:12px; font-size:12px; color:var(--text-muted); line-height:1.5;">
+                    <strong style="color:#ef4444;">Warning:</strong> This will permanently remove the mascot from your device. You can reinstall it anytime from the <strong>Pet Gallery</strong>.
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button class="btn btn-outline" style="width:auto; padding:8px 16px;" onclick="closeDeletePetModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirm-delete-btn" style="width:auto; padding:8px 20px;" onclick="confirmDeletePet()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <svg id="toast-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         <span id="toast-text">Success</span>
     </div>
 
@@ -790,12 +1128,29 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             return div.innerHTML;
         }
 
-        function showToast(msg) {
+        function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
             document.getElementById('toast-text').innerText = msg;
+            if (isError) {
+                t.classList.add('error');
+                if (icon) {
+                    icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+                    icon.setAttribute('stroke', '#ef4444');
+                }
+            } else {
+                t.classList.remove('error');
+                if (icon) {
+                    icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+                    icon.setAttribute('stroke', 'currentColor');
+                }
+            }
             t.classList.add('show');
             clearTimeout(window._toastTimer);
-            window._toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+            window._toastTimer = setTimeout(() => {
+                t.classList.remove('show');
+                t.classList.remove('error');
+            }, 3000);
         }
 
         async function loadInstalledPets() {
@@ -815,6 +1170,9 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             grid.innerHTML = '';
             installedPets.forEach(p => {
                 const isAct = p.slug === currentPetSlug;
+                const isV2 = p.version === 2;
+                const rows = isV2 ? 11 : 9;
+                const sheetUrl = `/pet_spritesheet?slug=${encodeURIComponent(p.slug)}`;
                 const card = document.createElement('div');
                 card.className = `pet-card ${isAct ? 'active-pet' : ''}`;
                 card.innerHTML = `
@@ -824,9 +1182,7 @@ HTML_CONTENT = r"""<!DOCTYPE html>
                             Active
                         </span>` : ''}
                     <div class="pet-preview">
-                        <img src="/pet_thumbnail?slug=${encodeURIComponent(p.slug)}" 
-                             alt="${escapeHtml(p.displayName)}"
-                             onerror="this.onerror=null; this.src='/pet_thumbnail?slug=${encodeURIComponent(p.slug)}&fallback=1';">
+                        <div class="pet-sprite" style="background-image: url('${sheetUrl}'); background-size: 800% ${rows * 100}%;"></div>
                     </div>
                     <div class="pet-info">
                         <h3>${escapeHtml(p.displayName)}</h3>
@@ -836,22 +1192,114 @@ HTML_CONTENT = r"""<!DOCTYPE html>
                         ${isAct ? 
                             `<button class="btn btn-outline" style="flex:1;" disabled>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Currently Active
+                                Active
                             </button>` : 
                             `<button class="btn" style="flex:1;" onclick="activatePet('${p.slug}')">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Set Active
+                                Activate
                             </button>`
                         }
-                        ${!isAct && installedPets.length > 1 ? 
-                            `<button class="btn btn-danger" title="Delete pet" onclick="deletePet('${p.slug}', '${escapeHtml(p.displayName)}')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>` : ''
-                        }
+                        <button class="btn btn-outline btn-icon" title="Edit pet name & subheading" onclick="openEditPetModal('${p.slug}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="btn btn-danger btn-icon" title="Delete pet permanently" onclick="openDeletePetModal('${p.slug}', '${escapeHtml(p.displayName)}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
                     </div>
                 `;
                 grid.appendChild(card);
             });
+        }
+
+        function openDeletePetModal(slug, displayName) {
+            document.getElementById('delete-pet-slug').value = slug;
+            document.getElementById('delete-pet-name-display').innerText = displayName || slug;
+            const modal = document.getElementById('delete-modal');
+            modal.style.display = 'flex';
+        }
+
+        function closeDeletePetModal() {
+            document.getElementById('delete-modal').style.display = 'none';
+        }
+
+        async function confirmDeletePet() {
+            const slug = document.getElementById('delete-pet-slug').value;
+            const displayName = document.getElementById('delete-pet-name-display').innerText;
+            if (!slug) return;
+
+            const btn = document.getElementById('confirm-delete-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner"></span> Deleting...`;
+            }
+
+            try {
+                const res = await fetch('/api/pets/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({slug})
+                });
+                const data = await res.json();
+                closeDeletePetModal();
+                if (data.success) {
+                    showToast(`Permanently deleted ${displayName}`);
+                    await loadInstalledPets();
+                    filterCatalog();
+                } else {
+                    showToast('Failed to delete: ' + (data.error || 'Unknown error'), true);
+                }
+            } catch (e) {
+                closeDeletePetModal();
+                showToast('Delete error', true);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete Permanently`;
+                }
+            }
+        }
+
+        function openEditPetModal(slug) {
+            const pet = installedPets.find(p => p.slug === slug);
+            if (!pet) return;
+            document.getElementById('edit-pet-slug').value = slug;
+            document.getElementById('edit-pet-name').value = pet.displayName || '';
+            document.getElementById('edit-pet-desc').value = pet.description || '';
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => document.getElementById('edit-pet-name').focus(), 50);
+        }
+
+        function closeEditPetModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        async function saveEditPet() {
+            const slug = document.getElementById('edit-pet-slug').value;
+            const name = document.getElementById('edit-pet-name').value.trim();
+            const desc = document.getElementById('edit-pet-desc').value.trim();
+            if (!name) {
+                showToast('Please enter a pet name', true);
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/pets/update', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ slug, name, desc })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    closeEditPetModal();
+                    showToast('Pet details updated!');
+                    await loadInstalledPets();
+                } else {
+                    showToast('Update failed: ' + (data.error || 'Unknown error'), true);
+                }
+            } catch (e) {
+                showToast('Error updating pet details', true);
+            }
         }
 
         async function activatePet(slug) {
@@ -868,29 +1316,7 @@ HTML_CONTENT = r"""<!DOCTYPE html>
                     showToast(`Switched active pet to ${slug}`);
                 }
             } catch (e) {
-                showToast('Failed to switch pet');
-            }
-        }
-
-        async function deletePet(slug, displayName) {
-            if (!confirm(`Are you sure you want to delete "${displayName || slug}"?`)) {
-                return;
-            }
-            try {
-                const res = await fetch('/api/pets/delete', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({slug})
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(`Deleted ${displayName || slug}`);
-                    await loadInstalledPets();
-                } else {
-                    showToast('Failed to delete: ' + (data.error || 'Unknown error'));
-                }
-            } catch (e) {
-                showToast('Delete error');
+                showToast('Failed to switch pet', true);
             }
         }
 
@@ -951,6 +1377,8 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             renderCatalogGrid(filtered);
         }
 
+        const installingSlugs = new Set();
+
         function renderCatalogGrid(pets) {
             const grid = document.getElementById('catalog-grid');
             grid.innerHTML = '';
@@ -959,14 +1387,15 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             const visible = pets.slice(0, catalogRenderLimit);
             visible.forEach(p => {
                 const isInst = installedSlugs.has(p.slug);
+                const isInstalling = installingSlugs.has(p.slug);
+                const isV2 = p.spriteVersionNumber === 2;
+                const rows = isV2 ? 11 : 9;
+                const sheetUrl = `https://raw.githubusercontent.com/legeling/awesome-codex-pet/main/pets/${encodeURIComponent(p.slug)}/spritesheet.webp`;
                 const card = document.createElement('div');
                 card.className = 'pet-card';
                 card.innerHTML = `
                     <div class="pet-preview">
-                        <img src="https://raw.githubusercontent.com/legeling/awesome-codex-pet/main/pets/${p.slug}/spritesheet.webp" 
-                             alt="${escapeHtml(p.name)}" 
-                             loading="lazy"
-                             onerror="this.onerror=null; this.src='/pet_thumbnail?slug=${p.slug}';">
+                        <div class="pet-sprite" style="background-image: url('${sheetUrl}'); background-size: 800% ${rows * 100}%;"></div>
                     </div>
                     <div class="pet-info">
                         <h3>${escapeHtml(p.name)}</h3>
@@ -977,10 +1406,15 @@ HTML_CONTENT = r"""<!DOCTYPE html>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                             Installed
                         </button>` : 
-                        `<button class="btn" onclick="downloadPet('${p.slug}')">
+                        (isInstalling ?
+                        `<button class="btn" id="install-btn-${p.slug}" disabled>
+                            <span class="spinner"></span>
+                            Installing...
+                        </button>` :
+                        `<button class="btn" id="install-btn-${p.slug}" onclick="installPet('${p.slug}', '${escapeHtml(p.name)}')">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            Download
-                        </button>`
+                            Install
+                        </button>`)
                     }
                 `;
                 grid.appendChild(card);
@@ -999,8 +1433,18 @@ HTML_CONTENT = r"""<!DOCTYPE html>
             filterCatalog();
         }
 
-        async function downloadPet(slug) {
-            showToast(`Downloading ${slug}...`);
+        async function installPet(slug, name) {
+            if (installingSlugs.has(slug)) return;
+            installingSlugs.add(slug);
+
+            const displayName = name || slug;
+            const btn = document.getElementById('install-btn-' + slug);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner"></span> Installing...`;
+            }
+
+            showToast(`Installing ${displayName}...`);
             try {
                 const res = await fetch('/api/catalog/download', {
                     method: 'POST',
@@ -1009,15 +1453,35 @@ HTML_CONTENT = r"""<!DOCTYPE html>
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showToast(`Installed ${slug}!`);
+                    installingSlugs.delete(slug);
+                    showToast(`Installed ${displayName}!`);
+                    if (btn) {
+                        btn.className = 'btn btn-outline';
+                        btn.disabled = true;
+                        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Installed`;
+                    }
                     await loadInstalledPets();
                     filterCatalog();
                 } else {
-                    showToast('Download error: ' + (data.error || ''));
+                    installingSlugs.delete(slug);
+                    showToast('Installation error: ' + (data.error || 'Failed to install'), true);
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Install`;
+                    }
                 }
             } catch (e) {
-                showToast('Failed to download pet');
+                installingSlugs.delete(slug);
+                showToast(`Failed to install ${displayName}`, true);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Install`;
+                }
             }
+        }
+
+        function downloadPet(slug, name) {
+            return installPet(slug, name);
         }
 
         async function loadSettings() {
@@ -1029,9 +1493,136 @@ HTML_CONTENT = r"""<!DOCTYPE html>
                 document.getElementById('scale-val').innerText = sPct + '%';
                 document.getElementById('setting-behavior').value = cfg.behavior || 'zero_g';
                 document.getElementById('setting-sync').checked = cfg.sync_with_antigravity !== false;
+                document.getElementById('setting-startup').checked = cfg.start_with_windows === true;
                 document.getElementById('setting-sound').checked = cfg.sound_enabled !== false;
+                loadShortcutsUI(cfg.shortcuts);
             } catch (e) {
                 console.error(e);
+            }
+        }
+
+        const DEFAULT_SHORTCUTS = {
+            toggle_pet: "Ctrl + Alt + P",
+            toggle_visibility: "Ctrl + Alt + H",
+            switch_pet: "Ctrl + Alt + N",
+            toggle_behavior: "Ctrl + Alt + B",
+            open_settings: "Ctrl + Alt + S"
+        };
+
+        let currentShortcuts = { ...DEFAULT_SHORTCUTS };
+        let activeRecordingAction = null;
+
+        function loadShortcutsUI(shortcuts) {
+            const sc = shortcuts || {};
+            for (const key of ['toggle_pet', 'toggle_visibility', 'switch_pet', 'toggle_behavior', 'open_settings']) {
+                const val = (sc[key] !== undefined && sc[key] !== null) ? sc[key] : (DEFAULT_SHORTCUTS[key] || '');
+                currentShortcuts[key] = val;
+                const el = document.getElementById('shortcut-' + key);
+                if (el) {
+                    el.value = val;
+                    el.classList.remove('recording');
+                }
+            }
+        }
+
+        function startRecordingShortcut(action) {
+            if (activeRecordingAction && activeRecordingAction !== action) {
+                const prev = document.getElementById('shortcut-' + activeRecordingAction);
+                if (prev) {
+                    prev.classList.remove('recording');
+                    prev.value = currentShortcuts[activeRecordingAction] || '';
+                }
+            }
+            activeRecordingAction = action;
+            const input = document.getElementById('shortcut-' + action);
+            if (input) {
+                input.classList.add('recording');
+                input.value = 'Press keys...';
+            }
+        }
+
+        async function handleShortcutKeydown(e, action) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (e.key === 'Escape') {
+                const input = document.getElementById('shortcut-' + action);
+                if (input) {
+                    input.classList.remove('recording');
+                    input.value = currentShortcuts[action] || '';
+                }
+                activeRecordingAction = null;
+                return;
+            }
+
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                await setShortcutValue(action, '');
+                activeRecordingAction = null;
+                return;
+            }
+
+            // Collect modifiers
+            const parts = [];
+            if (e.ctrlKey) parts.push('Ctrl');
+            if (e.altKey) parts.push('Alt');
+            if (e.shiftKey) parts.push('Shift');
+            if (e.metaKey) parts.push('Win');
+
+            // If only modifier is pressed so far, display partial
+            const k = e.key;
+            if (['Control', 'Alt', 'Shift', 'Meta'].includes(k)) {
+                const input = document.getElementById('shortcut-' + action);
+                if (input && parts.length > 0) {
+                    input.value = parts.join(' + ') + ' + ...';
+                }
+                return;
+            }
+
+            // Format primary key
+            let keyName = k.length === 1 ? k.toUpperCase() : k;
+            if (keyName === ' ') keyName = 'Space';
+            parts.push(keyName);
+
+            const shortcutStr = parts.join(' + ');
+            await setShortcutValue(action, shortcutStr);
+            activeRecordingAction = null;
+        }
+
+        async function clearShortcut(action) {
+            await setShortcutValue(action, '');
+        }
+
+        async function setShortcutValue(action, value) {
+            currentShortcuts[action] = value;
+            const input = document.getElementById('shortcut-' + action);
+            if (input) {
+                input.value = value;
+                input.classList.remove('recording');
+            }
+            await saveShortcuts();
+        }
+
+        async function resetShortcutsToDefault() {
+            currentShortcuts = { ...DEFAULT_SHORTCUTS };
+            loadShortcutsUI(currentShortcuts);
+            await saveShortcuts();
+            showToast('Shortcuts reset to defaults');
+        }
+
+        async function saveShortcuts() {
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ shortcuts: currentShortcuts })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Shortcuts updated successfully');
+                }
+            } catch (err) {
+                console.error('Failed to save shortcuts:', err);
+                showToast('Failed to save shortcuts');
             }
         }
 
@@ -1050,7 +1641,7 @@ HTML_CONTENT = r"""<!DOCTYPE html>
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({behavior: val})
             });
-            showToast(`Behavior: ${val}`);
+            showToast(val === 'zero_g' ? 'Behavior: Zero-G Float' : 'Behavior: Stationary');
         }
 
         async function updateSync(val) {
@@ -1060,6 +1651,15 @@ HTML_CONTENT = r"""<!DOCTYPE html>
                 body: JSON.stringify({sync_with_antigravity: val})
             });
             showToast(val ? 'Auto-sync enabled' : 'Auto-sync disabled');
+        }
+
+        async function updateStartup(val) {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({start_with_windows: val})
+            });
+            showToast(val ? 'Launch on startup enabled' : 'Launch on startup disabled');
         }
 
         async function updateSound(val) {
@@ -1235,7 +1835,8 @@ class HubHandler(BaseHTTPRequestHandler):
 
         if path == "/api/pets":
             cfg = load_config()
-            pets = get_available_pets(PETS_DIR)
+            deleted = set(cfg.get("deleted_pets", []))
+            pets = [p for p in get_available_pets(PETS_DIR) if p.slug not in deleted]
             pets_data = [
                 {
                     "slug": p.slug,
@@ -1255,6 +1856,35 @@ class HubHandler(BaseHTTPRequestHandler):
 
         if path == "/api/settings":
             self._send_json(load_config())
+            return
+
+        if path == "/pet_spritesheet":
+            raw_slug = qs.get("slug", ["desk-otter--zihualiu1997"])[0]
+            slug = safe_slug(raw_slug)
+            pet_dir = os.path.abspath(os.path.join(PETS_DIR, slug))
+            if not pet_dir.startswith(os.path.abspath(PETS_DIR)):
+                self.send_response(403)
+                self.end_headers()
+                return
+
+            candidates = ["spritesheet.webp", "spritesheet.png", "pet.png", "sheet.png", "spritesheet.gif"]
+            for fname in candidates:
+                fpath = os.path.join(pet_dir, fname)
+                if os.path.exists(fpath):
+                    ext = os.path.splitext(fname)[1].lower()
+                    ctype = "image/webp" if ext == ".webp" else ("image/gif" if ext == ".gif" else "image/png")
+                    self.send_response(200)
+                    self.send_header("Content-Type", ctype)
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.end_headers()
+                    try:
+                        with open(fpath, "rb") as f:
+                            self.wfile.write(f.read())
+                        return
+                    except Exception:
+                        pass
+            self.send_response(404)
+            self.end_headers()
             return
 
         if path == "/pet_thumbnail":
@@ -1387,6 +2017,47 @@ class HubHandler(BaseHTTPRequestHandler):
                 self._send_json({"success": False, "error": "Missing or invalid slug"}, 400)
             return
 
+        if path == "/api/pets/update":
+            slug = safe_slug(body.get("slug"))
+            new_name = str(body.get("name", "")).strip()
+            new_desc = str(body.get("desc", "")).strip()
+
+            if not slug or not new_name:
+                self._send_json({"success": False, "error": "Missing slug or name"}, 400)
+                return
+
+            pet_dir = os.path.abspath(os.path.join(PETS_DIR, slug))
+            if not pet_dir.startswith(os.path.abspath(PETS_DIR)) or not os.path.exists(pet_dir):
+                self._send_json({"success": False, "error": "Pet not found"}, 404)
+                return
+
+            manifest_path = os.path.join(pet_dir, "pet.json")
+            manifest = {}
+            if os.path.exists(manifest_path):
+                try:
+                    with open(manifest_path, "r", encoding="utf-8") as f:
+                        manifest = json.load(f)
+                except Exception:
+                    manifest = {}
+
+            manifest["displayName"] = new_name
+            manifest["description"] = new_desc
+
+            try:
+                with open(manifest_path, "w", encoding="utf-8") as f:
+                    json.dump(manifest, f, ensure_ascii=False, indent=2)
+            except Exception as e:
+                self._send_json({"success": False, "error": str(e)}, 500)
+                return
+
+            try:
+                os.utime(SETTINGS_FILE, None)
+            except Exception:
+                pass
+
+            self._send_json({"success": True})
+            return
+
         if path == "/api/pets/delete":
             slug = safe_slug(body.get("slug"))
             if not slug:
@@ -1398,28 +2069,47 @@ class HubHandler(BaseHTTPRequestHandler):
                 self._send_json({"success": False, "error": "Access denied"}, 403)
                 return
 
+            cfg = load_config()
+            deleted_list = cfg.get("deleted_pets", [])
+            if slug not in deleted_list:
+                deleted_list.append(slug)
+                cfg["deleted_pets"] = deleted_list
+
+            if cfg.get("current_pet") == slug:
+                all_pets = [p for p in get_available_pets(PETS_DIR) if p.slug != slug]
+                cfg["current_pet"] = all_pets[0].slug if all_pets else ""
+
+            save_config(cfg)
+
             if os.path.exists(target_dir):
-                cfg = load_config()
-                if cfg.get("current_pet") == slug:
-                    all_pets = [p for p in get_available_pets(PETS_DIR) if p.slug != slug]
-                    cfg["current_pet"] = all_pets[0].slug if all_pets else "desk-otter--zihualiu1997"
-                    save_config(cfg)
                 shutil.rmtree(target_dir, ignore_errors=True)
-                _THUMBNAIL_CACHE.pop(slug, None)
-                try:
-                    os.utime(SETTINGS_FILE, None)
-                except Exception:
-                    pass
-                self._send_json({"success": True})
-            else:
-                self._send_json({"success": False, "error": "Pet not found"}, 404)
+
+            _THUMBNAIL_CACHE.pop(slug, None)
+            try:
+                os.utime(SETTINGS_FILE, None)
+            except Exception:
+                pass
+            self._send_json({"success": True})
             return
 
         if path == "/api/settings":
             cfg = load_config()
-            for k in ("scale", "behavior", "sync_with_antigravity", "sound_enabled", "speech_enabled"):
+            for k in ("scale", "behavior", "sync_with_antigravity", "sound_enabled", "speech_enabled", "start_with_windows", "shortcuts"):
                 if k in body:
                     cfg[k] = body[k]
+                    if k == "start_with_windows":
+                        try:
+                            from config import sync_windows_startup
+                            sync_windows_startup(bool(body[k]))
+                        except Exception:
+                            pass
+                    elif k == "shortcuts":
+                        try:
+                            from config import sync_desktop_shortcut
+                            toggle_pet_sc = body[k].get("toggle_pet", "Ctrl+Alt+P") if isinstance(body[k], dict) else "Ctrl+Alt+P"
+                            sync_desktop_shortcut(toggle_pet_sc)
+                        except Exception:
+                            pass
             save_config(cfg)
             try:
                 os.utime(SETTINGS_FILE, None)
@@ -1428,7 +2118,7 @@ class HubHandler(BaseHTTPRequestHandler):
             self._send_json({"success": True, "config": cfg})
             return
 
-        if path == "/api/catalog/download":
+        if path == "/api/catalog/download" or path == "/api/catalog/install":
             slug = safe_slug(body.get("slug"))
             if not slug:
                 self._send_json({"success": False, "error": "Missing or invalid slug"}, 400)
@@ -1437,17 +2127,26 @@ class HubHandler(BaseHTTPRequestHandler):
             done_evt = threading.Event()
             res_holder = {}
 
-            def _cb(success, err=None):
+            def _cb(success, *args, **kwargs):
                 res_holder["success"] = success
-                res_holder["error"] = err
+                if len(args) >= 2:
+                    res_holder["error"] = args[1]
+                elif len(args) == 1:
+                    res_holder["error"] = args[0]
+                else:
+                    res_holder["error"] = kwargs.get("err") or kwargs.get("error")
                 done_evt.set()
 
             catalog.download_pet(slug, callback=_cb)
-            done_evt.wait(timeout=25.0)
+            done_evt.wait(timeout=30.0)
 
             if res_holder.get("success"):
                 _THUMBNAIL_CACHE.pop(slug, None)
                 cfg = load_config()
+                deleted_pets = cfg.get("deleted_pets", [])
+                if slug in deleted_pets:
+                    deleted_pets.remove(slug)
+                    cfg["deleted_pets"] = deleted_pets
                 cfg["current_pet"] = slug
                 save_config(cfg)
                 try:
@@ -1456,7 +2155,7 @@ class HubHandler(BaseHTTPRequestHandler):
                     pass
                 self._send_json({"success": True})
             else:
-                self._send_json({"success": False, "error": res_holder.get("error", "Download timed out")}, 500)
+                self._send_json({"success": False, "error": res_holder.get("error", "Installation timed out")}, 500)
             return
 
         if path == "/api/pets/import_zip":

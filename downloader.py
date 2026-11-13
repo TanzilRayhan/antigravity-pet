@@ -63,11 +63,23 @@ class PetCatalog:
         clean_slug = re.sub(r'[^a-zA-Z0-9_\-]', '', str(slug))
         clean_slug = os.path.basename(clean_slug)
 
+        def _invoke_cb(success, err=None):
+            if not callback:
+                return
+            try:
+                callback(success, clean_slug, err)
+            except TypeError:
+                try:
+                    callback(success, err)
+                except Exception as ex:
+                    print(f"Callback error: {ex}")
+            except Exception as ex:
+                print(f"Callback error: {ex}")
+
         def _task():
             dest_dir = os.path.abspath(os.path.join(self.pets_dir, clean_slug))
             if not dest_dir.startswith(os.path.abspath(self.pets_dir)):
-                if callback:
-                    callback(False, clean_slug, "Access denied")
+                _invoke_cb(False, "Access denied")
                 return
 
             os.makedirs(dest_dir, exist_ok=True)
@@ -90,12 +102,10 @@ class PetCatalog:
                 with open(os.path.join(dest_dir, "spritesheet.webp"), "wb") as f:
                     f.write(sheet_data)
 
-                if callback:
-                    callback(True, slug, None)
+                _invoke_cb(True, None)
             except Exception as e:
-                print(f"Failed to download {slug}: {e}")
-                if callback:
-                    callback(False, slug, str(e))
+                print(f"Failed to download {clean_slug}: {e}")
+                _invoke_cb(False, str(e))
 
         t = threading.Thread(target=_task, daemon=True)
         t.start()

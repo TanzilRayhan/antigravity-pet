@@ -72,13 +72,71 @@ class BITMAPINFO(ctypes.Structure):
         ('bmiColors', wintypes.DWORD * 3)
     ]
 
-WM_TRAYICON       = win32con.WM_USER + 20
-WM_TOGGLE_HOTKEY  = win32con.WM_USER + 50
+WM_TRAYICON           = win32con.WM_USER + 20
+WM_TOGGLE_HOTKEY      = win32con.WM_USER + 50  # Run & Exit Pet
+WM_VISIBILITY_HOTKEY  = win32con.WM_USER + 51  # Hide & Show Mini (Tray)
+WM_BEHAVIOR_HOTKEY    = win32con.WM_USER + 52  # Switch Behavior Mode
+WM_SETTINGS_HOTKEY    = win32con.WM_USER + 53  # Open Settings Hub
+WM_SWITCH_PET_HOTKEY  = win32con.WM_USER + 54  # Switch Pet
+
+WM_PET_TOGGLE         = user32.RegisterWindowMessageW("AntigravityPet_ToggleMsg")
+WM_PET_ENSURE_SHOW    = user32.RegisterWindowMessageW("AntigravityPet_EnsureShowMsg")
+WM_PET_SHOW           = user32.RegisterWindowMessageW("AntigravityPet_ShowMsg")
+
+def parse_shortcut_str(s: str):
+    """Parse human readable shortcut (e.g. 'Ctrl + Alt + P') to VK & modifier flags."""
+    if not s or not s.strip():
+        return None
+    parts = [p.strip().upper() for p in s.replace("+", " ").split()]
+    ctrl, alt, shift, win = False, False, False, False
+    vk = None
+    VK_MAP = {
+        "SPACE": 0x20, "TAB": 0x09, "ENTER": 0x0D, "RETURN": 0x0D,
+        "ESC": 0x1B, "ESCAPE": 0x1B, "BACKSPACE": 0x08,
+        "UP": 0x26, "DOWN": 0x28, "LEFT": 0x25, "RIGHT": 0x27,
+        "INSERT": 0x2D, "DELETE": 0x2E, "HOME": 0x24, "END": 0x23,
+        "PAGEUP": 0x21, "PAGEDOWN": 0x22
+    }
+    for i in range(1, 13):
+        VK_MAP[f"F{i}"] = 0x6F + i
+
+    for p in parts:
+        if p in ("CTRL", "CONTROL"):
+            ctrl = True
+        elif p in ("ALT", "MENU"):
+            alt = True
+        elif p in ("SHIFT",):
+            shift = True
+        elif p in ("WIN", "WINDOWS", "SUPER", "META"):
+            win = True
+        elif p in VK_MAP:
+            vk = VK_MAP[p]
+        elif len(p) == 1:
+            vk = ord(p)
+        elif p.startswith("VK_"):
+            try:
+                vk = int(p[3:], 16)
+            except Exception:
+                pass
+
+    if vk is None:
+        return None
+
+    return {
+        "ctrl": ctrl,
+        "alt": alt,
+        "shift": shift,
+        "win": win,
+        "vk": vk,
+        "raw": s
+    }
 
 class AntigravityPetWindow:
     def __init__(self):
+        self._last_toggle_time = 0.0
         self.cfg = load_config()
         self.sound = SoundPlayer(enabled=self.cfg.get("sound_enabled", True))
+        self._rebuild_shortcuts()
         
         self.scale = self.cfg.get("scale", 0.75)
         self.behavior = self.cfg.get("behavior", "zero_g")
@@ -123,7 +181,8 @@ class AntigravityPetWindow:
         self._ensure_hub_server()
 
         # Pets
-        self.available_pets = get_available_pets(PETS_DIR)
+        deleted = set(self.cfg.get("deleted_pets", []))
+        self.available_pets = [p for p in get_available_pets(PETS_DIR) if p.slug not in deleted]
         self.current_pet_slug = self.cfg.get("current_pet", "makima")
         self.sheet = None
         self._load_current_sheet()
@@ -214,7 +273,8 @@ class AntigravityPetWindow:
 
     def _load_current_sheet(self):
         chosen_pet = None
-        self.available_pets = get_available_pets(PETS_DIR)
+        deleted = set(self.cfg.get("deleted_pets", []))
+        self.available_pets = [p for p in get_available_pets(PETS_DIR) if p.slug not in deleted]
         for p in self.available_pets:
             if p.slug == self.current_pet_slug:
                 chosen_pet = p
@@ -304,31 +364,70 @@ class AntigravityPetWindow:
 
         self._render_current_frame()
 
+    def _rebuild_shortcuts(self):
+        sc_map = self.cfg.get("shortcuts") or {}
+        self.parsed_shortcuts = {
+            "toggle_pet": parse_shortcut_str(sc_map.get("toggle_pet", "Ctrl+Alt+P")),
+            "toggle_visibility": parse_shortcut_str(sc_map.get("toggle_visibility", "Ctrl+Alt+H")),
+            "switch_pet": parse_shortcut_str(sc_map.get("switch_pet", "Ctrl+Alt+N")),
+            "toggle_behavior": parse_shortcut_str(sc_map.get("toggle_behavior", "Ctrl+Alt+B")),
+            "open_settings": parse_shortcut_str(sc_map.get("open_settings", "Ctrl+Alt+S")),
+        }
+
     def _start_global_key_hook(self):
-        """Dedicated background thread polling GetAsyncKeyState so Ctrl+Alt+P works 100% reliably."""
+        """Dedicated background thread polling GetAsyncKeyState for configured global shortcuts."""
+        VK_CONTROL = 0x11
+        VK_MENU    = 0x12  # Alt
+        VK_SHIFT   = 0x10
+        VK_LWIN    = 0x5B
+        VK_RWIN    = 0x5C
+
+        msg_map = {
+            "toggle_pet": WM_TOGGLE_HOTKEY,
+            "toggle_visibility": WM_VISIBILITY_HOTKEY,
+            "switch_pet": WM_SWITCH_PET_HOTKEY,
+            "toggle_behavior": WM_BEHAVIOR_HOTKEY,
+            "open_settings": WM_SETTINGS_HOTKEY,
+        }
+
         def _listener():
-            VK_CONTROL = 0x11
-            VK_MENU    = 0x12 # Alt
-            VK_P       = 0x50
-            VK_LWIN    = 0x5B
-            VK_RWIN    = 0x5C
-
-            was_pressed = False
-            while not self._is_closed:
-                time.sleep(0.04) # 25Hz check (0.0% CPU)
+            was_pressed = {k: False for k in msg_map}
+            while not getattr(self, "_is_closed", False):
+                time.sleep(0.04)  # 25Hz check (0.0% CPU)
                 try:
-                    ctrl = bool(user32.GetAsyncKeyState(VK_CONTROL) & 0x8000)
-                    alt  = bool(user32.GetAsyncKeyState(VK_MENU) & 0x8000)
-                    win  = bool(user32.GetAsyncKeyState(VK_LWIN) & 0x8000) or bool(user32.GetAsyncKeyState(VK_RWIN) & 0x8000)
-                    p    = bool(user32.GetAsyncKeyState(VK_P) & 0x8000)
+                    ctrl  = bool(user32.GetAsyncKeyState(VK_CONTROL) & 0x8000)
+                    alt   = bool(user32.GetAsyncKeyState(VK_MENU) & 0x8000)
+                    shift = bool(user32.GetAsyncKeyState(VK_SHIFT) & 0x8000)
+                    win   = bool(user32.GetAsyncKeyState(VK_LWIN) & 0x8000) or bool(user32.GetAsyncKeyState(VK_RWIN) & 0x8000)
 
-                    is_down = ((ctrl and alt and p) or (win and alt and p))
-                    if is_down and not was_pressed:
-                        was_pressed = True
-                        if self.hwnd:
-                            user32.PostMessageW(self.hwnd, WM_TOGGLE_HOTKEY, 0, 0)
-                    elif not is_down:
-                        was_pressed = False
+                    parsed = getattr(self, "parsed_shortcuts", {})
+                    for action, sc in parsed.items():
+                        if not sc:
+                            was_pressed[action] = False
+                            continue
+
+                        # Check required modifiers
+                        if sc["ctrl"] and action == "toggle_pet":
+                            ctrl_ok = (ctrl or (win and not sc["win"]))
+                        else:
+                            ctrl_ok = (ctrl if sc["ctrl"] else (not ctrl))
+
+                        alt_ok   = (alt if sc["alt"] else (not alt))
+                        shift_ok = (shift if sc["shift"] else (not shift))
+                        win_ok   = (win if sc["win"] else (not win or (action == "toggle_pet" and sc["ctrl"])))
+
+                        key_ok = bool(user32.GetAsyncKeyState(sc["vk"]) & 0x8000)
+
+                        is_down = ctrl_ok and alt_ok and shift_ok and win_ok and key_ok
+                        if is_down:
+                            if not was_pressed.get(action, False):
+                                was_pressed[action] = True
+                                if self.hwnd:
+                                    msg = msg_map.get(action)
+                                    if msg:
+                                        user32.PostMessageW(self.hwnd, msg, 0, 0)
+                        else:
+                            was_pressed[action] = False
                 except Exception:
                     pass
         t = threading.Thread(target=_listener, daemon=True)
@@ -373,11 +472,114 @@ class AntigravityPetWindow:
         win32gui.ShowWindow(self.hwnd, win32con.SW_HIDE)
 
     def toggle_visibility(self):
+        now = time.time()
+        if now - getattr(self, "_last_toggle_time", 0.0) < 0.5:
+            return  # Debounce rapid triggers
+        self._last_toggle_time = now
+
         if self.is_visible:
             self.hide_pet()
         else:
             self.show_pet()
             self.sound.play_wave()
+
+    def _write_exit_marker(self):
+        try:
+            marker_path = os.path.join(CONFIG_DIR, ".pet_exit_marker")
+            with open(marker_path, "w", encoding="utf-8") as f:
+                f.write(f"{time.time():.4f}")
+        except Exception:
+            pass
+
+    def on_hotkey_toggle_pet(self):
+        """Run & Exit Pet shortcut."""
+        now = time.time()
+        if now - getattr(self, "_last_hotkey_time", 0.0) < 0.8:
+            return  # Debounce rapid triggers
+        self._last_hotkey_time = now
+
+        if self.is_visible:
+            # When the pet is showing, pressing shortcut exits the pet cleanly (not hide)
+            self._write_exit_marker()
+            self.quit_app()
+        else:
+            # When the pet is hidden in tray, pressing shortcut shows the pet
+            self.show_pet()
+            self.sound.play_wave()
+
+    def on_hotkey_toggle_visibility(self):
+        """Hide & Show Mini shortcut (keeps app in tray, toggles desktop visibility)."""
+        now = time.time()
+        if now - getattr(self, "_last_vis_hotkey_time", 0.0) < 0.5:
+            return
+        self._last_vis_hotkey_time = now
+
+        if self.is_visible:
+            self.hide_pet()
+        else:
+            self.show_pet()
+            self.sound.play_wave()
+
+    def on_hotkey_toggle_behavior(self):
+        """Switch Behavior Mode shortcut (Zero-G Float vs Stationary)."""
+        now = time.time()
+        if now - getattr(self, "_last_beh_hotkey_time", 0.0) < 0.6:
+            return
+        self._last_beh_hotkey_time = now
+
+        new_mode = "static" if self.behavior == "zero_g" else "zero_g"
+        self.behavior = new_mode
+        self.cfg["behavior"] = new_mode
+        save_config(self.cfg)
+        try:
+            os.utime(SETTINGS_FILE, None)
+        except Exception:
+            pass
+
+        if self.behavior != "zero_g":
+            self.current_y = self.base_y
+            if self.hwnd:
+                user32.SetWindowPos(
+                    self.hwnd, 0,
+                    int(self.x), int(self.current_y), 0, 0,
+                    0x0001 | 0x0004 | 0x0010
+                )
+        self.sound.play_wave()
+        if self.speech_enabled:
+            label = "Zero-G Float" if new_mode == "zero_g" else "Stationary"
+            self.speech_text = f"Mode: {label}"
+            self.show_speech = True
+            self.speech_timeout = time.time() + 2.0
+        self._render_current_frame()
+
+    def on_hotkey_switch_pet(self):
+        """Switch Pet shortcut (cycles to next installed companion mascot)."""
+        now = time.time()
+        if now - getattr(self, "_last_switch_pet_time", 0.0) < 0.6:
+            return
+        self._last_switch_pet_time = now
+
+        deleted = set(self.cfg.get("deleted_pets", []))
+        self.available_pets = [p for p in get_available_pets(PETS_DIR) if p.slug not in deleted]
+        if not self.available_pets:
+            return
+        curr_idx = 0
+        for i, p in enumerate(self.available_pets):
+            if p.slug == self.current_pet_slug:
+                curr_idx = i
+                break
+        next_idx = (curr_idx + 1) % len(self.available_pets)
+        next_pet = self.available_pets[next_idx]
+        self.change_pet(next_pet.slug)
+        if self.speech_enabled:
+            self.speech_text = f"I'm {next_pet.display_name}!"
+            self.show_speech = True
+            self.speech_timeout = time.time() + 2.0
+        self._render_current_frame()
+
+    # Legacy alias
+    def on_hotkey_pressed(self):
+        self.on_hotkey_toggle_pet()
 
     def open_settings_hub(self):
         """Open the single-instance modern Web-based Pet Gallery Hub."""
@@ -489,7 +691,8 @@ class AntigravityPetWindow:
                         elif idx == 1:  # Hide Pet
                             self.hide_pet()
                         elif idx == 2:  # Switch Pet
-                            self.available_pets = get_available_pets(PETS_DIR)
+                            deleted = set(self.cfg.get("deleted_pets", []))
+                            self.available_pets = [p for p in get_available_pets(PETS_DIR) if p.slug not in deleted]
                             curr_idx = 0
                             for i, p in enumerate(self.available_pets):
                                 if p.slug == self.current_pet_slug:
@@ -643,8 +846,30 @@ class AntigravityPetWindow:
             self._render_current_frame()
             return 0
 
-        elif msg == WM_TOGGLE_HOTKEY:
-            self.toggle_visibility()
+        elif msg == WM_TOGGLE_HOTKEY or msg == WM_PET_TOGGLE:
+            self.on_hotkey_toggle_pet()
+            return 0
+
+        elif msg == WM_VISIBILITY_HOTKEY:
+            self.on_hotkey_toggle_visibility()
+            return 0
+
+        elif msg == WM_SWITCH_PET_HOTKEY:
+            self.on_hotkey_switch_pet()
+            return 0
+
+        elif msg == WM_BEHAVIOR_HOTKEY:
+            self.on_hotkey_toggle_behavior()
+            return 0
+
+        elif msg == WM_SETTINGS_HOTKEY:
+            self.open_settings_hub()
+            return 0
+
+        elif msg == WM_PET_ENSURE_SHOW or msg == WM_PET_SHOW:
+            if not self.is_visible:
+                self.show_pet()
+                self.sound.play_wave()
             return 0
 
         elif msg == WM_TRAYICON:
@@ -752,6 +977,14 @@ class AntigravityPetWindow:
                         new_beh = fresh_cfg.get("behavior")
                         if new_beh and new_beh != self.behavior:
                             self.behavior = new_beh
+                            if self.behavior != "zero_g":
+                                self.current_y = self.base_y
+                                if self.hwnd:
+                                    user32.SetWindowPos(
+                                        self.hwnd, 0,
+                                        int(self.x), int(self.current_y), 0, 0,
+                                        0x0001 | 0x0004 | 0x0010
+                                    )
 
                         new_sound = fresh_cfg.get("sound_enabled")
                         if new_sound is not None and new_sound != self.sound.enabled:
@@ -760,8 +993,18 @@ class AntigravityPetWindow:
                         new_sync = fresh_cfg.get("sync_with_antigravity")
                         if new_sync is not None and new_sync != self.sync_with_antigravity:
                             self.sync_with_antigravity = new_sync
+                            if self.sync_with_antigravity:
+                                running = is_antigravity_running()
+                                self.prev_antigravity_state = running
+                                if running:
+                                    self.show_pet()
+                                else:
+                                    self.hide_pet()
+                            else:
+                                self.show_pet()
 
                         self.cfg = fresh_cfg
+                        self._rebuild_shortcuts()
                         self._render_current_frame()
             except Exception:
                 pass
@@ -776,21 +1019,54 @@ class AntigravityPetWindow:
                 self.current_frame_idx = 0
                 self.state_end_time = 0
 
-        # STILL ON IDLE:
-        # Only animate movements when mouse is hovered or pet is being dragged!
-        # When idle without hover/drag, keep completely still (frame 0) to avoid distraction.
-        if self.is_hovered or self.is_dragging:
-            # Advance frames when interacting
+        # ANIMATION & PHYSICS BY BEHAVIOR MODE:
+        if not self.is_dragging:
+            if self.behavior == "zero_g":
+                # Gentle vertical hover floating (Zero-G Float)
+                hover_offset = int(round(math.sin(now * 2.2) * 6.0))
+                target_y = self.base_y + hover_offset
+                if target_y != self.current_y:
+                    self.current_y = target_y
+                    if self.hwnd:
+                        user32.SetWindowPos(
+                            self.hwnd, 0,
+                            int(self.x), int(self.current_y), 0, 0,
+                            0x0001 | 0x0004 | 0x0010  # SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
+                        )
+
+                # In zero-g float, cycle idle frames naturally or interactively
+                if now >= self.next_frame_time:
+                    self.current_frame_idx += 1
+                    delay_ms = self.sheet.get_delay(self.current_state, self.current_frame_idx)
+                    self.next_frame_time = now + (delay_ms / 1000.0)
+                    self._render_current_frame()
+            else:
+                # Stationary (Locked position at base_y)
+                if self.current_y != self.base_y:
+                    self.current_y = self.base_y
+                    if self.hwnd:
+                        user32.SetWindowPos(
+                            self.hwnd, 0,
+                            int(self.x), int(self.current_y), 0, 0,
+                            0x0001 | 0x0004 | 0x0010
+                        )
+
+                if self.is_hovered:
+                    if now >= self.next_frame_time:
+                        self.current_frame_idx += 1
+                        delay_ms = self.sheet.get_delay(self.current_state, self.current_frame_idx)
+                        self.next_frame_time = now + (delay_ms / 1000.0)
+                        self._render_current_frame()
+                else:
+                    if self.current_frame_idx != 0:
+                        self.current_frame_idx = 0
+                        self._render_current_frame()
+        else:
+            # While dragging:
             if now >= self.next_frame_time:
                 self.current_frame_idx += 1
                 delay_ms = self.sheet.get_delay(self.current_state, self.current_frame_idx)
                 self.next_frame_time = now + (delay_ms / 1000.0)
-                self._render_current_frame()
-        else:
-            # Still pose: locked at frame 0 and base_y
-            if self.current_frame_idx != 0 or self.current_y != self.base_y:
-                self.current_frame_idx = 0
-                self.current_y = self.base_y
                 self._render_current_frame()
 
     def _render_current_frame(self):

@@ -15,18 +15,19 @@ dist/
 
 # User local settings & logs
 settings.json
+.pet_exit_marker
 *.log
 *.tmp
 
 # Releases and portable zips (use GitHub Releases)
 release/
 
-# Third-party copyrighted fan sprites (downloaded on-demand via in-app gallery)
-pets/agumon*
-pets/behemoth*
-pets/claude*
-pets/gigimon*
-pets/guilmon*
-pets/makima*
-pets/0818-makima*
-pets/pet/
+# Third-party community fan sprites (downloaded on-demand via in-app gallery)
+pets/*
+!pets/desk-otter--zihualiu1997/
+!pets/ai-pulse--wxy/
+!pets/diandian--lllucasxu/
+!pets/codenono--dq02/
+!pets/codex-orb--legeling/
+!pets/chud-codex--jorge-cuevas90003/
+!pets/.catalog_cache.json
