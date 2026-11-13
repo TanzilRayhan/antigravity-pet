@@ -40,7 +40,12 @@ try:
 except Exception:
     pass
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(PROJECT_ROOT, "src")
+if src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from config import ensure_environment, CONFIG_DIR
 from pet_window import AntigravityPetWindow

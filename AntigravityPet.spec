@@ -1,6 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 starter_datas = [
+    ('assets/logo.png', 'assets'),
+    ('assets/icon.ico', 'assets'),
     ('logo.png', '.'),
     ('icon.ico', '.'),
     ('pets/.catalog_cache.json', 'pets'),
@@ -14,7 +16,7 @@ starter_datas = [
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['src'],
     binaries=[],
     datas=starter_datas,
     hiddenimports=[

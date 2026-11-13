@@ -7,21 +7,31 @@ if getattr(sys, 'frozen', False):
     BUNDLE_DIR = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
     CONFIG_DIR = os.path.dirname(sys.executable)
 else:
-    BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
-    CONFIG_DIR = BUNDLE_DIR
+    _this_dir = os.path.dirname(os.path.abspath(__file__))
+    if os.path.basename(_this_dir).lower() == "src":
+        CONFIG_DIR = os.path.dirname(_this_dir)
+    else:
+        CONFIG_DIR = _this_dir
+    BUNDLE_DIR = CONFIG_DIR
 
 CONFIG_FILE = os.path.join(CONFIG_DIR, "settings.json")
 SETTINGS_FILE = CONFIG_FILE
 PETS_DIR = os.path.join(CONFIG_DIR, "pets")
 
 def get_asset_path(filename: str) -> str:
-    """Resolve asset path checking next to exe first, then bundled data."""
+    """Resolve asset path checking root first, then assets/ folder, then bundled data."""
     p_local = os.path.join(CONFIG_DIR, filename)
     if os.path.exists(p_local):
         return p_local
+    p_assets = os.path.join(CONFIG_DIR, "assets", filename)
+    if os.path.exists(p_assets):
+        return p_assets
     p_bundle = os.path.join(BUNDLE_DIR, filename)
     if os.path.exists(p_bundle):
         return p_bundle
+    p_bundle_assets = os.path.join(BUNDLE_DIR, "assets", filename)
+    if os.path.exists(p_bundle_assets):
+        return p_bundle_assets
     return p_local
 
 def ensure_environment():
@@ -134,7 +144,7 @@ def sync_windows_startup(enable: bool = False, hotkey: str = None):
                 sc.TargetPath = "wscript.exe"
                 sc.Arguments = f'"{os.path.join(CONFIG_DIR, "run_pet_hidden.vbs")}"'
                 sc.WorkingDirectory = CONFIG_DIR
-                sc.IconLocation = f"{os.path.join(CONFIG_DIR, 'icon.ico')},0"
+                sc.IconLocation = f"{get_asset_path('icon.ico')},0"
             sc.Description = "Antigravity 2.0 Desktop Pet Interactive Shortcut"
             if hotkey is None:
                 hotkey = load_config().get("shortcuts", {}).get("toggle_pet", "Ctrl+Alt+P")
@@ -173,7 +183,7 @@ def sync_desktop_shortcut(hotkey: str = None):
             target_path = "wscript.exe"
             target_args = f'"{os.path.join(CONFIG_DIR, "run_pet_hidden.vbs")}"'
             work_dir = CONFIG_DIR
-            icon_loc = f"{os.path.join(CONFIG_DIR, 'icon.ico')},0"
+            icon_loc = f"{get_asset_path('icon.ico')},0"
 
         if hotkey is None:
             hotkey = load_config().get("shortcuts", {}).get("toggle_pet", "Ctrl+Alt+P")

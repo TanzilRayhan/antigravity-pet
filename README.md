@@ -184,6 +184,46 @@ The compiled standalone executable will be created at `dist\AntigravityPet.exe`.
 
 ---
 
+## Repository Structure
+
+```
+antigravity-pet/
+├── assets/                  # Application icons, logos, and branding media
+├── pets/                    # Bundled default pets and offline catalog cache
+├── release/                 # Pre-compiled standalone portable releases
+├── scripts/                 # Windows automation and shortcut installer scripts
+│   ├── Create-Desktop-Shortcut.bat
+│   ├── Enable-Run-On-Startup.bat
+│   ├── Disable-Run-On-Startup.bat
+│   ├── install_shortcut.ps1
+│   ├── install_startup.ps1
+│   └── remove_startup.ps1
+├── src/                     # Modular Python application source code
+│   ├── antigravity_launcher.py # Deep-link Antigravity window & CDP trigger
+│   ├── config.py            # Global settings, persistence, and shortcut sync
+│   ├── downloader.py        # CodexPets online catalog client & unpacker
+│   ├── hub_server.py        # Local web hub server, REST API, and static UI
+│   ├── pet_importer.py      # Custom pet archive importer & converter
+│   ├── pet_loader.py        # Spritesheet animator & frame slicing engine
+│   ├── pet_manager_gui.py   # Fallback desktop management GUI
+│   ├── pet_window.py        # Win32 layered window, physics, and input loop
+│   ├── sound.py             # Audio playback and SFX sound effects
+│   ├── speech.py            # Dialog synthesis and dynamic speech bubbles
+│   ├── task_monitor.py      # Background task observer for Antigravity 2.0
+│   ├── theme.py             # Design system color palettes and tokens
+│   └── ui_renderer.py       # Pill dock, notification badges, and UI drawing
+├── AntigravityPet.spec      # PyInstaller one-file packaging specification
+├── main.py                  # Primary application entry point
+├── run_pet.bat              # Quick-launch Windows batch script
+├── run_pet_hidden.vbs       # Silent background launcher for hotkeys
+├── settings.json            # User configuration and hotkey preferences
+├── version_info.txt         # Windows binary version metadata
+├── requirements.txt         # Python package dependencies
+└── README.md                # Project documentation
+```
+
+---
+
 ## Architecture & Engineering
 
 ```mermaid
