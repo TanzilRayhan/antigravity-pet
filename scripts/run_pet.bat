@@ -1,10 +1,15 @@
 @echo off
 title Antigravity Desktop Pet
-cd /d "%~dp0"
+
+if exist "%~dp0..\main.py" (
+    cd /d "%~dp0.."
+) else (
+    cd /d "%~dp0"
+)
 
 REM 1. Check local virtual environment if bundled
-if exist "%~dp0.venv\Scripts\python.exe" (
-    "%~dp0.venv\Scripts\python.exe" main.py %*
+if exist ".venv\Scripts\python.exe" (
+    ".venv\Scripts\python.exe" main.py %*
     goto :end
 )
 

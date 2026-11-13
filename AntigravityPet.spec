@@ -3,8 +3,6 @@
 starter_datas = [
     ('assets/logo.png', 'assets'),
     ('assets/icon.ico', 'assets'),
-    ('logo.png', '.'),
-    ('icon.ico', '.'),
     ('pets/.catalog_cache.json', 'pets'),
     ('pets/desk-otter--zihualiu1997', 'pets/desk-otter--zihualiu1997'),
     ('pets/codenono--dq02', 'pets/codenono--dq02'),
@@ -52,6 +50,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    version='version_info.txt',
-    icon=['icon.ico'],
+    version='scripts/version_info.txt',
+    icon=['assets/icon.ico'],
 )

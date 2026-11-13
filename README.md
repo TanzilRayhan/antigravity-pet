@@ -1,7 +1,7 @@
 # Antigravity Desktop Pet
 
 <p align="center">
-  <img src="logo.png" width="96" height="96" alt="Antigravity Pet Logo" />
+  <img src="assets/logo.png" width="96" height="96" alt="Antigravity Pet Logo" />
 </p>
 
 <p align="center">
@@ -109,7 +109,7 @@ No Python or external dependencies required.
 1. Download **`AntigravityPet-v2.2.0-Portable.zip`** from [Releases](https://github.com/TanzilRayhan/antigravity-pet/releases).
 2. Extract the archive to any folder (e.g. `C:\AntigravityPet` or your Desktop).
 3. Double-click **`AntigravityPet.exe`** to launch.
-4. *(Optional)* Run `Create-Desktop-Shortcut.bat` or `Enable-Run-On-Startup.bat` to add a desktop icon or autostart with Windows.
+4. *(Optional)* Run `scripts\Create-Desktop-Shortcut.bat` or `scripts\Enable-Run-On-Startup.bat` to add a desktop icon or autostart with Windows.
 
 ---
 
@@ -130,7 +130,7 @@ No Python or external dependencies required.
    ```bash
    python main.py
    ```
-   *Or run `run_pet_hidden.vbs` for silent background execution.*
+   *Or run `scripts\run_pet_hidden.vbs` for silent background execution.*
 
 ---
 
@@ -156,14 +156,14 @@ No Python or external dependencies required.
 
 ## Windows Integration
 
-Helper scripts are included to integrate seamlessly with Windows:
+Helper scripts are included in `scripts/` to integrate seamlessly with Windows:
 
 * **Desktop Shortcut:**
-  Run `Create-Desktop-Shortcut.bat` or right-click `install_shortcut.ps1` $\rightarrow$ **Run with PowerShell** to create an "Antigravity Pet" shortcut on your Desktop with the official icon and global hotkey.
+  Run `scripts\Create-Desktop-Shortcut.bat` or right-click `scripts\install_shortcut.ps1` $\rightarrow$ **Run with PowerShell** to create an "Antigravity Pet" shortcut on your Desktop with the official icon and global hotkey.
 * **Launch on Windows Startup:**
-  Run `Enable-Run-On-Startup.bat` or toggle in the Settings Hub to register the companion in your Windows Startup directory. It will silently wait in the background and appear whenever Antigravity 2.0 starts.
+  Run `scripts\Enable-Run-On-Startup.bat` or toggle in the Settings Hub to register the companion in your Windows Startup directory. It will silently wait in the background and appear whenever Antigravity 2.0 starts.
 * **Remove from Startup:**
-  Run `Disable-Run-On-Startup.bat` or `remove_startup.ps1` to unregister from Windows Startup.
+  Run `scripts\Disable-Run-On-Startup.bat` or `scripts\remove_startup.ps1` to unregister from Windows Startup.
 
 ---
 
@@ -188,17 +188,25 @@ The compiled standalone executable will be created at `dist\AntigravityPet.exe`.
 
 ```
 antigravity-pet/
-├── assets/                  # Application icons, logos, and branding media
+├── assets/                  # Official application icons, logos, and branding media
+│   ├── icon.ico
+│   └── logo.png
 ├── pets/                    # Bundled default pets and offline catalog cache
-├── release/                 # Pre-compiled standalone portable releases
-├── scripts/                 # Windows automation and shortcut installer scripts
+├── release/                 # Pre-compiled standalone portable releases (v2.2.0)
+│   ├── AntigravityPet-v2.2.0-Portable/
+│   └── AntigravityPet-v2.2.0-Portable.zip
+├── scripts/                 # Windows automation, launch, and shortcut installer scripts
 │   ├── Create-Desktop-Shortcut.bat
-│   ├── Enable-Run-On-Startup.bat
 │   ├── Disable-Run-On-Startup.bat
+│   ├── Enable-Run-On-Startup.bat
 │   ├── install_shortcut.ps1
 │   ├── install_startup.ps1
-│   └── remove_startup.ps1
+│   ├── remove_startup.ps1
+│   ├── run_pet.bat
+│   ├── run_pet_hidden.vbs
+│   └── version_info.txt
 ├── src/                     # Modular Python application source code
+│   ├── __init__.py
 │   ├── antigravity_launcher.py # Deep-link Antigravity window & CDP trigger
 │   ├── config.py            # Global settings, persistence, and shortcut sync
 │   ├── downloader.py        # CodexPets online catalog client & unpacker
@@ -214,11 +222,8 @@ antigravity-pet/
 │   └── ui_renderer.py       # Pill dock, notification badges, and UI drawing
 ├── AntigravityPet.spec      # PyInstaller one-file packaging specification
 ├── main.py                  # Primary application entry point
-├── run_pet.bat              # Quick-launch Windows batch script
-├── run_pet_hidden.vbs       # Silent background launcher for hotkeys
-├── settings.json            # User configuration and hotkey preferences
-├── version_info.txt         # Windows binary version metadata
 ├── requirements.txt         # Python package dependencies
+├── LICENSE                  # MIT open-source license
 └── README.md                # Project documentation
 ```
 

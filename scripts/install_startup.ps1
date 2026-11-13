@@ -14,7 +14,7 @@ if (-not (Test-Path $pywExe)) {
 }
 if (-not $pywExe) {
     $pywExe = "wscript.exe"
-    $pywArgs = "`"$projectRoot\run_pet_hidden.vbs`""
+    $pywArgs = "`"$projectRoot\scripts\run_pet_hidden.vbs`""
 } else {
     $pywArgs = "`"$projectRoot\main.py`""
 }

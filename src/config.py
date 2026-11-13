@@ -142,7 +142,7 @@ def sync_windows_startup(enable: bool = False, hotkey: str = None):
                 sc.IconLocation = f"{sys.executable},0"
             else:
                 sc.TargetPath = "wscript.exe"
-                sc.Arguments = f'"{os.path.join(CONFIG_DIR, "run_pet_hidden.vbs")}"'
+                sc.Arguments = f'"{os.path.join(CONFIG_DIR, "scripts", "run_pet_hidden.vbs")}"'
                 sc.WorkingDirectory = CONFIG_DIR
                 sc.IconLocation = f"{get_asset_path('icon.ico')},0"
             sc.Description = "Antigravity 2.0 Desktop Pet Interactive Shortcut"
@@ -181,7 +181,7 @@ def sync_desktop_shortcut(hotkey: str = None):
             icon_loc = f"{sys.executable},0"
         else:
             target_path = "wscript.exe"
-            target_args = f'"{os.path.join(CONFIG_DIR, "run_pet_hidden.vbs")}"'
+            target_args = f'"{os.path.join(CONFIG_DIR, "scripts", "run_pet_hidden.vbs")}"'
             work_dir = CONFIG_DIR
             icon_loc = f"{get_asset_path('icon.ico')},0"
 

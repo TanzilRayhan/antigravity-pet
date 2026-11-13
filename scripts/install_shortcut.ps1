@@ -14,7 +14,7 @@ if (Test-Path $exeTarget) {
     $targetArgs = ""
 } else {
     $targetPath = "wscript.exe"
-    $targetArgs = "`"$projectRoot\run_pet_hidden.vbs`""
+    $targetArgs = "`"$projectRoot\scripts\run_pet_hidden.vbs`""
 }
 
 $iconTarget = Join-Path $projectRoot "assets\icon.ico"
